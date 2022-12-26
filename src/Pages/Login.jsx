@@ -148,7 +148,11 @@ const Login = () => {
                   <InputBox
                     label="Email Address"
                     variant="standard"
-                    sx={{ width: "100%", color: "red", marginTop: "30px" }}
+                    sx={{
+                      width: "100%",
+                      color: "red",
+                      marginTop: "30px",
+                    }}
                     inputName={commonInputCSS}
                   />
                   <PasswordInput

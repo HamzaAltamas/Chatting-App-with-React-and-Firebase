@@ -41,3 +41,12 @@ a {
   background: var(--primaryColorHover);
 }
 /* scrollbar design end */
+
+/* input fontfamily style start */
+.MuiFormLabel-root {
+  font-family: "Nunito", sans-serif !important;
+}
+.MuiInputBase-input {
+  font-family: "Nunito", sans-serif !important;
+}
+/* input fontfamily style end */

@@ -150,7 +150,11 @@ const Registration = () => {
                   <InputBox
                     label="Full Name"
                     variant="outlined"
-                    sx={{ width: "100%", color: "red", marginTop: "30px" }}
+                    sx={{
+                      width: "100%",
+                      color: "red",
+                      marginTop: "30px",
+                    }}
                     inputName={commonInputCSS}
                   />
 
