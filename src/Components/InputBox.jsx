@@ -1,14 +1,14 @@
 import { TextField } from "@mui/material";
 import React from "react";
 
-const InputBox = ({ label, variant, sx, className }) => {
+const InputBox = (props) => {
   return (
     <>
-      <TextField
-        label={label}
-        variant={variant}
-        sx={sx}
-        className={className}
+      <props.inputName
+        label={props.label}
+        variant={props.variant}
+        sx={props.sx}
+        className={props.className}
       />
     </>
   );

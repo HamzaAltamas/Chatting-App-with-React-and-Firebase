@@ -1,3 +1,9 @@
+/* css variables start */
+:root {
+  --primarycolor: #5f34f5;
+  --primaryColorHover: #5f35f59e;
+}
+/* css variables end */
 * {
   margin: 0;
   padding: 0;
@@ -12,3 +18,26 @@ body {
 a {
   text-decoration: none;
 }
+
+/* scrollbar design start */
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--primarycolor);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primaryColorHover);
+}
+/* scrollbar design end */
