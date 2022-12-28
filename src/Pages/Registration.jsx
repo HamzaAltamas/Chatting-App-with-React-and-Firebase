@@ -1,6 +1,6 @@
-import { Grid, TextField } from "@mui/material";
+import { Alert, Grid, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { useState } from "react";
 import CommonButton from "../Components/CommonButton";
 import Heading from "../Components/Heading";
 import Image from "../Components/Image";
@@ -9,6 +9,7 @@ import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import AuthenticationLink from "../Components/AuthenticationLink";
 import { OutlinePassword } from "../Components/PasswordInput";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const SubmitButtonStyle = styled(Button)({
   width: "80%",
@@ -38,6 +39,91 @@ const SubmitButtonStyle = styled(Button)({
 });
 
 const Registration = () => {
+  // firebase functionality start
+  const auth = getAuth();
+  // firebase functionality end
+
+  // form data start
+  // error states start
+  let [errorData, setErrorDAta] = useState({
+    email: "",
+    fname: "",
+    password: "",
+  });
+  // error states end
+  // registration success text state start
+  let [regSuccessTxt, setRegSuccessTxt] = useState("");
+  // registration success text state end
+
+  let [regFormData, setRegFormData] = useState({
+    email: "",
+    fname: "",
+    password: "",
+  });
+  let handleChange = (e) => {
+    let { name, value } = e.target;
+
+    setRegFormData((prevformData) => {
+      return {
+        ...prevformData,
+        [name]: value,
+      };
+    });
+    setErrorDAta({
+      ...errorData,
+      [name]: "",
+    });
+  };
+  let submitClick = () => {
+    if (regFormData.email == "") {
+      setErrorDAta({
+        ...errorData,
+        email: "Email required",
+      });
+    } else if (regFormData.fname == "") {
+      setErrorDAta({
+        ...errorData,
+        fname: "Name required",
+      });
+    } else if (regFormData.password == "") {
+      setErrorDAta({
+        ...errorData,
+        password: "Password required",
+      });
+    } else {
+      createUserWithEmailAndPassword(
+        auth,
+        regFormData.email,
+        regFormData.password
+      )
+        .then((user) => {
+          setRegFormData({
+            email: "",
+            fname: "",
+            password: "",
+          });
+          setRegSuccessTxt("Registration Successfull");
+          setTimeout(() => {
+            setRegSuccessTxt("");
+          }, 2500);
+        })
+        .catch((error) => {
+          const errCode = error.code;
+          errCode.includes("auth/email-already-in-use") &&
+            setErrorDAta({ ...errorData, email: "Email already exists" });
+
+          errCode.includes("auth/weak-password") &&
+            setErrorDAta({
+              ...errorData,
+              password: "Password should be at least 6 characters",
+            });
+
+          // ..
+        });
+    }
+  };
+  // form data end
+
   const ImageStyle = {
     width: "100%",
     height: "100%",
@@ -55,25 +141,7 @@ const Registration = () => {
     width: "200px",
     height: "auto",
   };
-  const commonInputCSS = styled(TextField)({
-    "& label.Mui-focused": {
-      color: "#5F34F5",
-    },
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "#5F34F5",
-    },
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": {
-        borderColor: "#d1d1d1",
-      },
-      "&:hover fieldset": {
-        borderColor: "#5F34F5",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#5F34F5",
-      },
-    },
-  });
+
   return (
     <>
       <Box>
@@ -133,6 +201,17 @@ const Registration = () => {
                     fontSize: { xs: "16px", sm: "20px", md: "25px" },
                   }}
                 />
+                <Heading
+                  variant="h6"
+                  component="h2"
+                  title={regSuccessTxt}
+                  sx={{
+                    color: "green",
+                    textAlign: { xs: "center", sm: "center", md: "left" },
+                    fontSize: { xs: "12px", sm: "16px", md: "20px" },
+                  }}
+                />
+
                 <Box
                   sx={{
                     display: "flex",
@@ -144,23 +223,59 @@ const Registration = () => {
                   <InputBox
                     label="Email Address"
                     variant="outlined"
-                    sx={{ width: "100%", color: "red", marginTop: "30px" }}
-                    inputName={commonInputCSS}
+                    sx={{ width: "100%", marginTop: "30px" }}
+                    onChange={handleChange}
+                    name="email"
+                    type="email"
+                    value={regFormData.email}
                   />
+                  {errorData.email && (
+                    <Alert
+                      variant="filled"
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      {errorData.email}
+                    </Alert>
+                  )}
+
                   <InputBox
                     label="Full Name"
                     variant="outlined"
+                    onChange={handleChange}
+                    type="text"
+                    name="fname"
                     sx={{
                       width: "100%",
-                      color: "red",
                       marginTop: "30px",
                     }}
-                    inputName={commonInputCSS}
+                    value={regFormData.fname}
                   />
+                  {errorData.fname && (
+                    <Alert
+                      variant="filled"
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      {errorData.fname}
+                    </Alert>
+                  )}
 
                   <OutlinePassword
                     sx={{ width: "100%", color: "red", marginTop: "30px" }}
+                    name="password"
+                    onChange={handleChange}
+                    value={regFormData.password}
                   />
+                  {errorData.password && (
+                    <Alert
+                      variant="filled"
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      {errorData.password}
+                    </Alert>
+                  )}
                   <Box
                     sx={{
                       display: "flex",
@@ -171,6 +286,7 @@ const Registration = () => {
                     <CommonButton
                       title="Sign Up"
                       buttonName={SubmitButtonStyle}
+                      onClick={submitClick}
                     />
                   </Box>
                   <AuthenticationLink

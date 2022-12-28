@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 
-const PasswordInput = ({ sx }) => {
+const PasswordInput = ({ sx, onChange, name }) => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -29,6 +29,8 @@ const PasswordInput = ({ sx }) => {
           Password
         </InputLabel>
         <Input
+          name={name}
+          onChange={onChange}
           className="standart-password-input"
           id="standard-adornment-password"
           type={showPassword ? "text" : "password"}
@@ -51,7 +53,7 @@ const PasswordInput = ({ sx }) => {
 
 export default PasswordInput;
 
-export function OutlinePassword({ sx }) {
+export function OutlinePassword({ sx, value, onChange, name }) {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -64,7 +66,10 @@ export function OutlinePassword({ sx }) {
       <FormControl sx={sx} variant="outlined">
         <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
         <OutlinedInput
+          name={name}
+          onChange={onChange}
           id="outlined-adornment-password"
+          value={value}
           type={showPassword ? "text" : "password"}
           endAdornment={
             <InputAdornment position="end">

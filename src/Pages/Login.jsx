@@ -1,6 +1,6 @@
-import { Grid, TextField } from "@mui/material";
+import { Alert, Grid, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { useState } from "react";
 import CommonButton from "../Components/CommonButton";
 import Heading from "../Components/Heading";
 import Image from "../Components/Image";
@@ -40,6 +40,36 @@ const LoginButtonStyle = styled(Button)({
 });
 
 const Login = () => {
+  // error states start
+  let [email, setEmailErr] = useState(false);
+  let [password, setpassErr] = useState(false);
+  // error states end
+  let [loginFormData, setloginFormData] = useState({
+    email: "",
+    password: "",
+  });
+  let handleChange = (e) => {
+    let { name, value } = e.target;
+
+    setloginFormData((prevformData) => {
+      return {
+        ...prevformData,
+        [name]: value,
+      };
+    });
+    console.log(loginFormData);
+    setEmailErr(!name);
+    setpassErr(!name);
+  };
+  let submitClick = () => {
+    if (loginFormData.email == "") {
+      setEmailErr(true);
+    } else if (loginFormData.password == "") {
+      setpassErr(true);
+    }
+  };
+  // form data end
+
   const ImageStyle = {
     width: "100%",
     height: "100%",
@@ -63,25 +93,7 @@ const Login = () => {
     width: "200px",
     height: "auto",
   };
-  const commonInputCSS = styled(TextField)({
-    "& label.Mui-focused": {
-      color: "#5F34F5",
-    },
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "#5F34F5",
-    },
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": {
-        borderColor: "#d1d1d1",
-      },
-      "&:hover fieldset": {
-        borderColor: "#5F34F5",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#5F34F5",
-      },
-    },
-  });
+
   return (
     <>
       <Box>
@@ -153,16 +165,37 @@ const Login = () => {
                       color: "red",
                       marginTop: "30px",
                     }}
-                    inputName={commonInputCSS}
+                    onChange={handleChange}
+                    name="email"
+                    type="email"
                   />
+                  {email && (
+                    <Alert
+                      variant="filled"
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      Email Required
+                    </Alert>
+                  )}
                   <PasswordInput
                     sx={{
                       width: "100%",
                       color: "red",
                       marginTop: "30px",
                     }}
-                    inputName={commonInputCSS}
+                    name="password"
+                    onChange={handleChange}
                   />
+                  {password && (
+                    <Alert
+                      variant="filled"
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      Password Required
+                    </Alert>
+                  )}
                   <Box
                     sx={{
                       display: "flex",
@@ -173,6 +206,7 @@ const Login = () => {
                     <CommonButton
                       title="Login to continue"
                       buttonName={LoginButtonStyle}
+                      onClick={submitClick}
                     />
                   </Box>
                   <AuthenticationLink

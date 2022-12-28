@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 const CommonButton = (props) => {
   return (
     <>
-      <props.buttonName>{props.title}</props.buttonName>
+      <props.buttonName onClick={props.onClick}>{props.title}</props.buttonName>
     </>
   );
 };
