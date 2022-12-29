@@ -9,7 +9,11 @@ import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import AuthenticationLink from "../Components/AuthenticationLink";
 import { OutlinePassword } from "../Components/PasswordInput";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 
 const SubmitButtonStyle = styled(Button)({
   width: "80%",
@@ -52,7 +56,7 @@ const Registration = () => {
   });
   // error states end
   // registration success text state start
-  let [regSuccessTxt, setRegSuccessTxt] = useState("");
+  let [regSuccessTxt, setRegSuccessTxt] = useState(false);
   // registration success text state end
 
   let [regFormData, setRegFormData] = useState({
@@ -102,10 +106,21 @@ const Registration = () => {
             fname: "",
             password: "",
           });
-          setRegSuccessTxt("Registration Successfull");
+          setRegSuccessTxt(
+            <Alert sx={{ width: "80%", padding: "10px" }} severity="success">
+              Registration Successfull
+            </Alert>
+          );
           setTimeout(() => {
-            setRegSuccessTxt("");
+            setRegSuccessTxt(false);
           }, 2500);
+          sendEmailVerification(auth.currentUser).then(() => {
+            setRegSuccessTxt(
+              <Alert sx={{ width: "80%", padding: "10px" }} severity="success">
+                Check your email
+              </Alert>
+            );
+          });
         })
         .catch((error) => {
           const errCode = error.code;
@@ -231,7 +246,6 @@ const Registration = () => {
                   />
                   {errorData.email && (
                     <Alert
-                      variant="filled"
                       severity="error"
                       sx={{ width: "100%", margin: "10px 0" }}
                     >
@@ -253,7 +267,6 @@ const Registration = () => {
                   />
                   {errorData.fname && (
                     <Alert
-                      variant="filled"
                       severity="error"
                       sx={{ width: "100%", margin: "10px 0" }}
                     >
@@ -269,7 +282,6 @@ const Registration = () => {
                   />
                   {errorData.password && (
                     <Alert
-                      variant="filled"
                       severity="error"
                       sx={{ width: "100%", margin: "10px 0" }}
                     >
