@@ -1,4 +1,4 @@
-import { Alert, Grid, TextField } from "@mui/material";
+import { Alert, Grid, LinearProgress, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useState } from "react";
 import CommonButton from "../Components/CommonButton";
@@ -9,6 +9,7 @@ import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import AuthenticationLink from "../Components/AuthenticationLink";
 import { OutlinePassword } from "../Components/PasswordInput";
+import { FaCheck } from "react-icons/fa";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -46,6 +47,7 @@ const Registration = () => {
   // firebase functionality start
   const auth = getAuth();
   // firebase functionality end
+  let [passIcon, setPassIcon] = useState(false);
 
   // form data start
   // error states start
@@ -57,6 +59,7 @@ const Registration = () => {
   // error states end
   // registration success text state start
   let [regSuccessTxt, setRegSuccessTxt] = useState(false);
+  let [progress, setProgress] = useState(0);
   // registration success text state end
 
   let [regFormData, setRegFormData] = useState({
@@ -64,25 +67,96 @@ const Registration = () => {
     fname: "",
     password: "",
   });
+
   let handleChange = (e) => {
     let { name, value } = e.target;
-
     setRegFormData((prevformData) => {
       return {
         ...prevformData,
         [name]: value,
       };
     });
+    let capital = /[A-Z]/;
+    let lower = /[a-z]/;
+    let num = /[0-9]/;
+    let specialChar = /[(!|@|#|$|%|^|&|*|(|)|_|+)]/;
+    if (name == "password") {
+      // //////////////////////////////////////
+      // if (capital.test(value)) {
+      //   setProgress((prev) => prev + 25);
+      // }
+
+      // if (lower.test(value)) {
+      //   setProgress((prev) => prev + 25);
+      // }
+      // if (num.test(value)) {
+      //   setProgress((prev) => prev + 25);
+      // }
+      // if (specialChar.test(value)) {
+      //   setProgress((prev) => prev + 25);
+      // } else {
+      //   setProgress((prev) => prev - 25);
+      // }
+      // ////////////////////////////////////////
+      if (!capital.test(value)) {
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a capital letter",
+        });
+        return;
+      }
+
+      if (!lower.test(value)) {
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a lowercase letter",
+        });
+        return;
+      }
+      if (!num.test(value)) {
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a number letter",
+        });
+        return;
+      }
+      if (!specialChar.test(value)) {
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a Special Character",
+        });
+        return;
+      } else {
+        setErrorDAta({
+          ...errorData,
+          password: "",
+        });
+        setPassIcon(true);
+      }
+    }
+
     setErrorDAta({
       ...errorData,
       [name]: "",
     });
   };
   let submitClick = () => {
+    let pattern =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     if (regFormData.email == "") {
       setErrorDAta({
         ...errorData,
         email: "Email required",
+      });
+    } else if (!pattern.test(regFormData.email)) {
+      setErrorDAta({
+        ...errorData,
+        email: "Valid Email required",
       });
     } else if (regFormData.fname == "") {
       setErrorDAta({
@@ -274,12 +348,32 @@ const Registration = () => {
                     </Alert>
                   )}
 
-                  <OutlinePassword
-                    sx={{ width: "100%", color: "red", marginTop: "30px" }}
-                    name="password"
-                    onChange={handleChange}
-                    value={regFormData.password}
-                  />
+                  <Box
+                    sx={{
+                      width: "100%",
+                      position: "relative",
+                      marginTop: "30px",
+                    }}
+                  >
+                    <OutlinePassword
+                      sx={{ width: "100%", color: "red" }}
+                      name="password"
+                      onChange={handleChange}
+                      value={regFormData.password}
+                    />
+                    <LinearProgress variant="determinate" value={progress} />
+                    {passIcon && (
+                      <FaCheck
+                        style={{
+                          color: "green",
+                          position: "absolute",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          right: "10%",
+                        }}
+                      />
+                    )}
+                  </Box>
                   {errorData.password && (
                     <Alert
                       severity="error"
