@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 
-const PasswordInput = ({ sx, onChange, name }) => {
+const PasswordInput = ({ sx, onChange, name, value }) => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -33,6 +33,7 @@ const PasswordInput = ({ sx, onChange, name }) => {
           onChange={onChange}
           className="standart-password-input"
           id="standard-adornment-password"
+          value={value}
           type={showPassword ? "text" : "password"}
           endAdornment={
             <InputAdornment position="end">

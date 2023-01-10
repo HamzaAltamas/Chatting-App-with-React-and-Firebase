@@ -8,9 +8,16 @@ import InputBox from "../Components/InputBox";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import AuthenticationLink from "../Components/AuthenticationLink";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import PasswordInput from "../Components/PasswordInput";
+import { ProgressBar } from "react-loader-spinner";
+import { ToastContainer, toast } from "react-toastify";
 
 const LoginButtonStyle = styled(Button)({
   width: "80%",
@@ -40,10 +47,24 @@ const LoginButtonStyle = styled(Button)({
 });
 
 const Login = () => {
+  const auth = getAuth();
+  let nevigate = useNavigate();
+  const provider = new GoogleAuthProvider();
+  let gmailClick = () => {
+    signInWithPopup(auth, provider).then((result) => {
+      console.log("ggle dn");
+    });
+  };
+
   // error states start
-  let [email, setEmailErr] = useState(false);
-  let [password, setpassErr] = useState(false);
+  let [errorData, setErrorDAta] = useState({
+    email: "",
+    password: "",
+  });
   // error states end
+  // loader start
+  let [loader, setLoader] = useState(false);
+  // loader end
   let [loginFormData, setloginFormData] = useState({
     email: "",
     password: "",
@@ -57,15 +78,115 @@ const Login = () => {
         [name]: value,
       };
     });
+
     console.log(loginFormData);
-    setEmailErr(!name);
-    setpassErr(!name);
+    setErrorDAta({
+      ...errorData,
+      [name]: "",
+    });
   };
   let submitClick = () => {
+    setLoader(true);
+    let pattern =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     if (loginFormData.email == "") {
-      setEmailErr(true);
+      setLoader(false);
+      setErrorDAta({
+        ...errorData,
+        email: "Please enter your email",
+      });
+    } else if (!pattern.test(loginFormData.email)) {
+      setLoader(false);
+      setErrorDAta({
+        ...errorData,
+        email: "Please enter a valid email",
+      });
     } else if (loginFormData.password == "") {
-      setpassErr(true);
+      setLoader(false);
+      setErrorDAta({
+        ...errorData,
+        password: "Please enter your passsword",
+      });
+    } else {
+      setLoader(true);
+      signInWithEmailAndPassword(
+        auth,
+        loginFormData.email,
+        loginFormData.password
+      )
+        .then((userCredential) => {
+          setloginFormData({
+            email: "",
+            password: "",
+          });
+          // redirect home
+
+          if (userCredential.user.emailVerified === false) {
+            setLoader(false);
+            toast.success(
+              "Email is not varified please check your email and try later",
+              {
+                position: "bottom-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+              }
+            );
+          } else {
+            setLoader(true);
+            toast.success("Login Successfull!", {
+              position: "bottom-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+            });
+            setTimeout(() => {
+              nevigate("/home");
+            }, 3000);
+          }
+          // Signed in
+          const user = userCredential.user;
+          console.log(userCredential.user);
+          // ...
+          console.log("hoise");
+        })
+        .catch((error) => {
+          setLoader(false);
+          const errorCode = error.code;
+          console.log(errorCode);
+
+          if (errorCode.includes("auth/user-not-found")) {
+            setLoader(true);
+            toast.success("User not found please sign up!", {
+              position: "bottom-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+            });
+            setTimeout(() => {
+              nevigate("/");
+            }, 3000);
+          }
+          if (errorCode.includes("auth/wrong-password")) {
+            setErrorDAta({
+              ...errorData,
+              password: "Wrong password",
+            });
+          }
+        });
     }
   };
   // form data end
@@ -96,6 +217,18 @@ const Login = () => {
 
   return (
     <>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <Box>
         <Grid container spacing={0}>
           <Grid
@@ -145,6 +278,7 @@ const Login = () => {
                 />
                 <Link>
                   <Image
+                    onClick={gmailClick}
                     imageStyle={googleLoginBtn}
                     src="../src/assets/images/googlebtn.png"
                   />
@@ -168,14 +302,15 @@ const Login = () => {
                     onChange={handleChange}
                     name="email"
                     type="email"
+                    value={loginFormData.email}
                   />
-                  {email && (
+                  {errorData.email && (
                     <Alert
                       variant="filled"
                       severity="error"
                       sx={{ width: "100%", margin: "10px 0" }}
                     >
-                      Email Required
+                      {errorData.email}
                     </Alert>
                   )}
                   <PasswordInput
@@ -186,29 +321,51 @@ const Login = () => {
                     }}
                     name="password"
                     onChange={handleChange}
+                    value={loginFormData.password}
                   />
-                  {password && (
+                  {errorData.password && (
                     <Alert
                       variant="filled"
                       severity="error"
                       sx={{ width: "100%", margin: "10px 0" }}
                     >
-                      Password Required
+                      {errorData.password}
                     </Alert>
                   )}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      width: "100%",
-                    }}
-                  >
-                    <CommonButton
-                      title="Login to continue"
-                      buttonName={LoginButtonStyle}
-                      onClick={submitClick}
-                    />
-                  </Box>
+                  {loader ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <ProgressBar
+                        height="80"
+                        width="80"
+                        ariaLabel="progress-bar-loading"
+                        wrapperStyle={{}}
+                        wrapperClass="progress-bar-wrapper"
+                        borderColor="#d1d1d1"
+                        barColor=" #5f34f5"
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <CommonButton
+                        title="Login to continue"
+                        buttonName={LoginButtonStyle}
+                        onClick={submitClick}
+                      />
+                    </Box>
+                  )}
+
                   <AuthenticationLink
                     title="Don't have any account?"
                     hrefTitle="Sign Up"

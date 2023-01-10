@@ -15,6 +15,9 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
 } from "firebase/auth";
+import { useNavigate } from "react-router";
+import { ToastContainer, toast } from "react-toastify";
+import { ProgressBar } from "react-loader-spinner";
 
 const SubmitButtonStyle = styled(Button)({
   width: "80%",
@@ -44,11 +47,12 @@ const SubmitButtonStyle = styled(Button)({
 });
 
 const Registration = () => {
+  let nevigate = useNavigate();
   // firebase functionality start
   const auth = getAuth();
   // firebase functionality end
   let [passIcon, setPassIcon] = useState(false);
-
+  let [loader, setLoader] = useState(false);
   // form data start
   // error states start
   let [errorData, setErrorDAta] = useState({
@@ -76,6 +80,7 @@ const Registration = () => {
         [name]: value,
       };
     });
+
     let capital = /[A-Z]/;
     let lower = /[a-z]/;
     let num = /[0-9]/;
@@ -99,35 +104,44 @@ const Registration = () => {
       // }
       // ////////////////////////////////////////
       if (!capital.test(value)) {
+        setLoader(false);
         setPassIcon(false);
         setErrorDAta({
           ...errorData,
           password: "Please provide a capital letter",
         });
         return;
-      }
-
-      if (!lower.test(value)) {
+      } else if (!lower.test(value)) {
+        setLoader(false);
         setPassIcon(false);
         setErrorDAta({
           ...errorData,
           password: "Please provide a lowercase letter",
         });
         return;
-      }
-      if (!num.test(value)) {
+      } else if (!num.test(value)) {
+        setLoader(false);
         setPassIcon(false);
         setErrorDAta({
           ...errorData,
           password: "Please provide a number letter",
         });
         return;
-      }
-      if (!specialChar.test(value)) {
+      } else if (!specialChar.test(value)) {
+        setLoader(false);
         setPassIcon(false);
         setErrorDAta({
           ...errorData,
           password: "Please provide a Special Character",
+        });
+        return;
+      } else if (value.length < 6) {
+        setLoader(false);
+        console.log("6 char");
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Password should be than 6 chracters",
         });
         return;
       } else {
@@ -145,6 +159,7 @@ const Registration = () => {
     });
   };
   let submitClick = () => {
+    setLoader((prev) => !prev);
     let pattern =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -154,27 +169,32 @@ const Registration = () => {
         email: "Email required",
       });
     } else if (!pattern.test(regFormData.email)) {
+      setLoader(false);
       setErrorDAta({
         ...errorData,
         email: "Valid Email required",
       });
     } else if (regFormData.fname == "") {
+      setLoader(false);
       setErrorDAta({
         ...errorData,
         fname: "Name required",
       });
     } else if (regFormData.password == "") {
+      setLoader(false);
       setErrorDAta({
         ...errorData,
         password: "Password required",
       });
     } else {
+      setLoader(true);
       createUserWithEmailAndPassword(
         auth,
         regFormData.email,
         regFormData.password
       )
         .then((user) => {
+          setLoader(false);
           setRegFormData({
             email: "",
             fname: "",
@@ -195,8 +215,22 @@ const Registration = () => {
               </Alert>
             );
           });
+          toast.success("Successfully registered!", {
+            position: "bottom-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
+          setTimeout(() => {
+            nevigate("/login");
+          }, 3000);
         })
         .catch((error) => {
+          setLoader(false);
           const errCode = error.code;
           errCode.includes("auth/email-already-in-use") &&
             setErrorDAta({ ...errorData, email: "Email already exists" });
@@ -233,6 +267,18 @@ const Registration = () => {
 
   return (
     <>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <Box>
         <Grid container spacing={0}>
           <Grid
@@ -362,6 +408,7 @@ const Registration = () => {
                       value={regFormData.password}
                     />
                     <LinearProgress variant="determinate" value={progress} />
+
                     {passIcon && (
                       <FaCheck
                         style={{
@@ -382,19 +429,39 @@ const Registration = () => {
                       {errorData.password}
                     </Alert>
                   )}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      width: "100%",
-                    }}
-                  >
-                    <CommonButton
-                      title="Sign Up"
-                      buttonName={SubmitButtonStyle}
-                      onClick={submitClick}
-                    />
-                  </Box>
+                  {loader ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <ProgressBar
+                        height="80"
+                        width="80"
+                        ariaLabel="progress-bar-loading"
+                        wrapperStyle={{}}
+                        wrapperClass="progress-bar-wrapper"
+                        borderColor="#d1d1d1"
+                        barColor=" #5f34f5"
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <CommonButton
+                        title="Sign Up"
+                        buttonName={SubmitButtonStyle}
+                        onClick={submitClick}
+                      />
+                    </Box>
+                  )}
                   <AuthenticationLink
                     title="Already  have an account ?"
                     hrefTitle="Sign In"

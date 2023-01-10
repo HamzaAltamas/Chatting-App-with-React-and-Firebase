@@ -1,10 +1,10 @@
 import { Box } from "@mui/system";
 import React from "react";
 
-const Image = ({ src, imageStyle }) => {
+const Image = ({ src, imageStyle, onClick }) => {
   return (
     <>
-      <img style={imageStyle} src={src} />
+      <img onClick={onClick} style={imageStyle} src={src} />
     </>
   );
 };
