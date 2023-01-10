@@ -52,7 +52,21 @@ const Login = () => {
   const provider = new GoogleAuthProvider();
   let gmailClick = () => {
     signInWithPopup(auth, provider).then((result) => {
+      console.log(result);
       console.log("ggle dn");
+      toast.success("Successfully sign in with google", {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      setTimeout(() => {
+        nevigate("/home");
+      }, 3000);
     });
   };
 
