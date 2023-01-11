@@ -1,6 +1,6 @@
 import { Alert, Grid, LinearProgress, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CommonButton from "../Components/CommonButton";
 import Heading from "../Components/Heading";
 import Image from "../Components/Image";
@@ -18,6 +18,7 @@ import {
 import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import { ProgressBar } from "react-loader-spinner";
+import { useSelector } from "react-redux";
 
 const SubmitButtonStyle = styled(Button)({
   width: "80%",
@@ -48,6 +49,13 @@ const SubmitButtonStyle = styled(Button)({
 
 const Registration = () => {
   let nevigate = useNavigate();
+  let data = useSelector((state) => state);
+
+  useEffect(() => {
+    if (data.userData.userInfo) {
+      nevigate("/home");
+    }
+  }, []);
   // firebase functionality start
   const auth = getAuth();
   // firebase functionality end
@@ -164,6 +172,7 @@ const Registration = () => {
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     if (regFormData.email == "") {
+      setLoader(false);
       setErrorDAta({
         ...errorData,
         email: "Email required",

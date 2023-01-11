@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 import Login from "./Pages/Login";
 import Home from "./Pages/Home";
+import ForgotPassword from "./Pages/ForgotPassword";
 
 let router = createBrowserRouter(
   createRoutesFromElements(
@@ -17,6 +18,7 @@ let router = createBrowserRouter(
       <Route path="/" element={<Registration />}></Route>
       <Route path="/login" element={<Login />}></Route>
       <Route path="/home" element={<Home />}></Route>
+      <Route path="/forgotpass" element={<ForgotPassword />}></Route>
     </Route>
   )
 );

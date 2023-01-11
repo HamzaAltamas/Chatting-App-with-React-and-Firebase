@@ -1,6 +1,6 @@
 import { Alert, Grid, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CommonButton from "../Components/CommonButton";
 import Heading from "../Components/Heading";
 import Image from "../Components/Image";
@@ -18,6 +18,8 @@ import {
 import PasswordInput from "../Components/PasswordInput";
 import { ProgressBar } from "react-loader-spinner";
 import { ToastContainer, toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { activeUser } from "../Slices/userSlices";
 
 const LoginButtonStyle = styled(Button)({
   width: "80%",
@@ -47,8 +49,16 @@ const LoginButtonStyle = styled(Button)({
 });
 
 const Login = () => {
+  let disp = useDispatch();
   const auth = getAuth();
   let nevigate = useNavigate();
+  let data = useSelector((state) => state);
+
+  useEffect(() => {
+    if (data.userData.userInfo) {
+      nevigate("/home");
+    }
+  }, []);
   const provider = new GoogleAuthProvider();
   let gmailClick = () => {
     signInWithPopup(auth, provider).then((result) => {
@@ -152,6 +162,8 @@ const Login = () => {
               }
             );
           } else {
+            disp(activeUser(userCredential.user.uid));
+            localStorage.setItem("userInfo", userCredential.user.uid);
             setLoader(true);
             toast.success("Login Successfull!", {
               position: "bottom-center",
@@ -384,6 +396,12 @@ const Login = () => {
                     title="Don't have any account?"
                     hrefTitle="Sign Up"
                     href="/"
+                    style={AuthenticationLinkStyle}
+                  />
+                  <AuthenticationLink
+                    title="Forgot password?"
+                    hrefTitle="Click here."
+                    href="/forgotpass"
                     style={AuthenticationLinkStyle}
                   />
                 </Box>
