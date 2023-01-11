@@ -3,6 +3,37 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
+import CommonButton from "../Components/CommonButton";
+
+import { Button } from "@mui/material";
+import { styled } from "@mui/system";
+
+const LoginButtonStyle = styled(Button)({
+  width: "20%",
+  textTransform: "initial",
+  padding: "19px 12px",
+  fontSize: "17px",
+  borderRadius: "10px",
+  marginTop: "30px",
+
+  color: "white",
+  backgroundColor: "#5F35F5",
+
+  fontFamily: '"Nunito", sans-serif',
+  "&:hover": {
+    backgroundColor: "#5f35f59e",
+    borderColor: "#0062cc",
+    boxShadow: "none",
+  },
+  "&:active": {
+    boxShadow: "none",
+    backgroundColor: "none",
+    borderColor: "none",
+  },
+  "&:focus": {
+    boxShadow: "none",
+  },
+});
 
 const Home = () => {
   let disp = useDispatch();
@@ -36,7 +67,12 @@ const Home = () => {
 
   return (
     <div>
-      <button onClick={logout}>Logout</button>
+      <h1>This is Home page</h1>
+      <CommonButton
+        title="Logout"
+        buttonName={LoginButtonStyle}
+        onClick={logout}
+      />
     </div>
   );
 };

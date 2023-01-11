@@ -63,6 +63,9 @@ const Login = () => {
   let gmailClick = () => {
     signInWithPopup(auth, provider).then((result) => {
       console.log(result);
+      disp(activeUser(result.user.uid));
+      localStorage.setItem("userInfo", result.user.uid);
+      setLoader(true);
       console.log("ggle dn");
       toast.success("Successfully sign in with google", {
         position: "bottom-center",
@@ -180,10 +183,6 @@ const Login = () => {
             }, 3000);
           }
           // Signed in
-          const user = userCredential.user;
-          console.log(userCredential.user);
-          // ...
-          console.log("hoise");
         })
         .catch((error) => {
           setLoader(false);
