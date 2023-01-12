@@ -11,11 +11,13 @@ import {
 import Login from "./Pages/Login";
 import Home from "./Pages/Home";
 import ForgotPassword from "./Pages/ForgotPassword";
+import Mainpage from "./Pages/Mainpage";
 
 let router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-      <Route path="/" element={<Registration />}></Route>
+      <Route path="/" element={<Mainpage />}></Route>
+      <Route path="/registration" element={<Registration />}></Route>
       <Route path="/login" element={<Login />}></Route>
       <Route path="/home" element={<Home />}></Route>
       <Route path="/forgotpass" element={<ForgotPassword />}></Route>

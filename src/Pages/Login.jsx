@@ -62,7 +62,6 @@ const Login = () => {
   const provider = new GoogleAuthProvider();
   let gmailClick = () => {
     signInWithPopup(auth, provider).then((result) => {
-      console.log(result);
       disp(activeUser(result.user.uid));
       localStorage.setItem("userInfo", result.user.uid);
       setLoader(true);
@@ -202,7 +201,7 @@ const Login = () => {
               theme: "dark",
             });
             setTimeout(() => {
-              nevigate("/");
+              nevigate("/registration");
             }, 3000);
           }
           if (errorCode.includes("auth/wrong-password")) {
