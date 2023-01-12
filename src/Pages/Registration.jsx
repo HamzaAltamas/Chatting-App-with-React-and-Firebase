@@ -89,28 +89,28 @@ const Registration = () => {
       };
     });
 
+    let namePattern = /[A-Z]{1}[a-z]*/;
+
+    if (name === "fname") {
+      if (!namePattern.test(value)) {
+        setErrorDAta({
+          ...errorData,
+          fname: "Name's first letter should be Capital letter",
+        });
+        return;
+      } else {
+        setErrorDAta({
+          ...errorData,
+          fname: "",
+        });
+      }
+    }
+
     let capital = /[A-Z]/;
     let lower = /[a-z]/;
     let num = /[0-9]/;
     let specialChar = /[(!|@|#|$|%|^|&|*|(|)|_|+)]/;
     if (name == "password") {
-      // //////////////////////////////////////
-      // if (capital.test(value)) {
-      //   setProgress((prev) => prev + 25);
-      // }
-
-      // if (lower.test(value)) {
-      //   setProgress((prev) => prev + 25);
-      // }
-      // if (num.test(value)) {
-      //   setProgress((prev) => prev + 25);
-      // }
-      // if (specialChar.test(value)) {
-      //   setProgress((prev) => prev + 25);
-      // } else {
-      //   setProgress((prev) => prev - 25);
-      // }
-      // ////////////////////////////////////////
       if (!capital.test(value)) {
         setLoader(false);
         setPassIcon(false);
@@ -166,6 +166,7 @@ const Registration = () => {
       [name]: "",
     });
   };
+
   let submitClick = () => {
     setLoader((prev) => !prev);
     let pattern =
