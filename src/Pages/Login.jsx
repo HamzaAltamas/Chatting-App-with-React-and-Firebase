@@ -57,7 +57,7 @@ const Login = () => {
 
   useEffect(() => {
     if (data.userData.userInfo) {
-      nevigate("/home");
+      nevigate("/chattingup");
     }
   }, []);
   const gmailprovider = new GoogleAuthProvider();
@@ -78,7 +78,7 @@ const Login = () => {
         theme: "dark",
       });
       setTimeout(() => {
-        nevigate("/home");
+        nevigate("/chattingup");
       }, 3000);
     });
   };
@@ -197,7 +197,7 @@ const Login = () => {
               theme: "dark",
             });
             setTimeout(() => {
-              nevigate("/home");
+              nevigate("/chattingup");
             }, 3000);
           }
           // Signed in

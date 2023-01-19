@@ -1,12 +1,15 @@
 import React, { useEffect } from "react";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
 import CommonButton from "../Components/CommonButton";
 
-import { Button } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
+
 import { styled } from "@mui/system";
+import { Height } from "@mui/icons-material";
+import Grouplist from "../Components/Grouplist";
 
 const LoginButtonStyle = styled(Button)({
   width: "20%",
@@ -36,7 +39,6 @@ const LoginButtonStyle = styled(Button)({
 });
 
 const Home = () => {
-  let disp = useDispatch();
   let navigate = useNavigate();
   let data = useSelector((state) => state);
 
@@ -46,34 +48,37 @@ const Home = () => {
     }
   }, []);
 
-  const auth = getAuth();
-  //  track user login or logout
-  // onAuthStateChanged(auth, (user) => {
-  //   if (user) {
-  //     disp(activeUser(user.uid));
-  //   } else {
-  //     navigate("/login");
-  //   }
-  // });
-  // // track user login or logout
-
-  let logout = () => {
-    signOut(auth).then(() => {
-      disp(activeUser(null));
-      localStorage.clear("userInfo");
-      navigate("/");
-    });
-  };
-
   return (
-    <div>
-      <h1>This is Home page</h1>
-      <CommonButton
-        title="Logout"
-        buttonName={LoginButtonStyle}
-        onClick={logout}
-      />
-    </div>
+    <>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100vh",
+
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "95%",
+            height: "95%",
+            display: { md: "flex " },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: "5px",
+          }}
+        >
+          <Grouplist />
+          <Grouplist />
+          <Grouplist />
+          <Grouplist />
+          <Grouplist />
+          <Grouplist />
+        </Box>
+      </Box>
+    </>
   );
 };
 

@@ -18,7 +18,11 @@ body {
 a {
   text-decoration: none;
 }
-
+ul {
+  list-style: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 /* scrollbar design start */
 /* width */
 ::-webkit-scrollbar {
@@ -50,3 +54,103 @@ a {
   font-family: "Nunito", sans-serif !important;
 }
 /* input fontfamily style end */
+
+/* sidebar nav icons styling start */
+.sidebar-nav-icons {
+  margin-top: 20% !important;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  row-gap: 30px;
+  width: 100%;
+}
+.sidebar-nav-icons li {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.sidebar-nav-icons li {
+  font-size: 30px;
+  color: #fff;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.sidebar-nav-icons li a {
+  font-size: 30px;
+  color: #fff;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.sidebar-nav-icons li .active {
+  color: var(--primarycolor);
+  position: relative;
+}
+.sidebar-nav-icons li .active::after {
+  position: absolute;
+  content: "";
+  width: 130px;
+  height: 50px;
+  background-color: #fff;
+  right: 0;
+  top: -9px;
+  z-index: -1;
+  border-radius: 10px 0 0 10px;
+  -webkit-border-radius: 10px 0 0 10px;
+  -moz-border-radius: 10px 0 0 10px;
+  -ms-border-radius: 10px 0 0 10px;
+  -o-border-radius: 10px 0 0 10px;
+}
+.sidebar-nav-icons li .active::before {
+  position: absolute;
+  content: "";
+  right: 0;
+  top: -9px;
+  height: 50px;
+  width: 5px;
+  border-radius: 10px 0 0 10px;
+  background-color: var(--primarycolor);
+  box-shadow: -2px 0px 4px rgba(0, 0, 0, 0.25);
+}
+/* sidebar nav icons styling end */
+
+/* botttom navbar styling start */
+.bottom-nav-icons {
+  display: flex;
+  column-gap: 30px;
+}
+.bottom-nav-icons li {
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  position: relative;
+}
+.bottom-nav-icons li a {
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  position: relative;
+}
+.bottom-nav-icons li .active {
+  color: var(--primarycolor);
+  background-color: #fff;
+  padding: 5px;
+
+  border-radius: 20px;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -ms-border-radius: 20px;
+  -o-border-radius: 20px;
+}
+
+/* bottom navgbar styling end */

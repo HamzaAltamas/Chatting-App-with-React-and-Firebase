@@ -41,7 +41,7 @@ const Mainpage = () => {
 
   useEffect(() => {
     if (data.userData.userInfo) {
-      navigate("/home");
+      navigate("/chattingup");
     }
   }, []);
 
