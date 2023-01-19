@@ -14,6 +14,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  FacebookAuthProvider,
 } from "firebase/auth";
 import PasswordInput from "../Components/PasswordInput";
 import { ProgressBar } from "react-loader-spinner";
@@ -59,9 +60,9 @@ const Login = () => {
       nevigate("/home");
     }
   }, []);
-  const provider = new GoogleAuthProvider();
+  const gmailprovider = new GoogleAuthProvider();
   let gmailClick = () => {
-    signInWithPopup(auth, provider).then((result) => {
+    signInWithPopup(auth, gmailprovider).then((result) => {
       disp(activeUser(result.user.uid));
       localStorage.setItem("userInfo", result.user.uid);
       setLoader(true);
@@ -81,6 +82,24 @@ const Login = () => {
       }, 3000);
     });
   };
+
+  // facebook login
+
+  let fbLoginClick = () => {
+    const fbprovider = new FacebookAuthProvider();
+    signInWithPopup(auth, fbprovider)
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        console.log(errorCode);
+
+        // ...
+      });
+  };
+  // facebook login
 
   // error states start
   let [errorData, setErrorDAta] = useState({
@@ -234,6 +253,10 @@ const Login = () => {
     height: "64px",
     marginTop: "30px",
   };
+  const fbLoginBtn = {
+    width: "221px",
+    height: "64px",
+  };
   const logoStyle = {
     width: "200px",
     height: "auto",
@@ -300,13 +323,24 @@ const Login = () => {
                     marginTop: { xs: "20px", sm: "20px", md: "0" },
                   }}
                 />
-                <Link>
-                  <Image
-                    onClick={gmailClick}
-                    imageStyle={googleLoginBtn}
-                    src="../src/assets/images/googlebtn.png"
-                  />
-                </Link>
+                <Box
+                  sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+                >
+                  <Link>
+                    <Image
+                      onClick={gmailClick}
+                      imageStyle={googleLoginBtn}
+                      src="../src/assets/images/googlebtn.png"
+                    />
+                  </Link>
+                  <Link>
+                    <Image
+                      onClick={fbLoginClick}
+                      imageStyle={fbLoginBtn}
+                      src="../src/assets/images/fblogin.png"
+                    />
+                  </Link>
+                </Box>
                 <Box
                   sx={{
                     display: "flex",
@@ -393,7 +427,7 @@ const Login = () => {
                   <AuthenticationLink
                     title="Don't have any account?"
                     hrefTitle="Sign Up"
-                    href="/"
+                    href="/registration"
                     style={AuthenticationLinkStyle}
                   />
                   <AuthenticationLink

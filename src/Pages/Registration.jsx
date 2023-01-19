@@ -50,6 +50,7 @@ const SubmitButtonStyle = styled(Button)({
 const Registration = () => {
   let nevigate = useNavigate();
   let data = useSelector((state) => state);
+  let [inputname, setInputname] = useState();
 
   useEffect(() => {
     if (data.userData.userInfo) {
@@ -82,6 +83,7 @@ const Registration = () => {
 
   let handleChange = (e) => {
     let { name, value } = e.target;
+    setInputname(name);
     setRegFormData((prevformData) => {
       return {
         ...prevformData,
@@ -168,6 +170,60 @@ const Registration = () => {
   };
 
   let submitClick = () => {
+    let capital = /[A-Z]/;
+    let lower = /[a-z]/;
+    let num = /[0-9]/;
+    let specialChar = /[(!|@|#|$|%|^|&|*|(|)|_|+)]/;
+    if (inputname == "password") {
+      if (!capital.test(value)) {
+        setLoader(false);
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a capital letter",
+        });
+        return;
+      } else if (!lower.test(value)) {
+        setLoader(false);
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a lowercase letter",
+        });
+        return;
+      } else if (!num.test(value)) {
+        setLoader(false);
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a number letter",
+        });
+        return;
+      } else if (!specialChar.test(value)) {
+        setLoader(false);
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Please provide a Special Character",
+        });
+        return;
+      } else if (value.length < 6) {
+        setLoader(false);
+        console.log("6 char");
+        setPassIcon(false);
+        setErrorDAta({
+          ...errorData,
+          password: "Password should be than 6 chracters",
+        });
+        return;
+      } else {
+        setErrorDAta({
+          ...errorData,
+          password: "",
+        });
+        setPassIcon(true);
+      }
+    }
     setLoader((prev) => !prev);
     let pattern =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
