@@ -53,7 +53,7 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (data.userData.userInfo) {
-      navigate("/home");
+      navigate("/chattingup/home");
     }
   }, []);
 

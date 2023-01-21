@@ -3,7 +3,7 @@ import React from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
 
-const GroupList = ({ title, button, buttonName, date }) => {
+const MyGroupsList = ({ title, button, buttonName, date }) => {
   return (
     <>
       <Box
@@ -42,4 +42,4 @@ const GroupList = ({ title, button, buttonName, date }) => {
   );
 };
 
-export default GroupList;
+export default MyGroupsList;

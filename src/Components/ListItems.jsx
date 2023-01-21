@@ -4,7 +4,7 @@ import React from "react";
 import { Typography } from "@mui/material";
 import ListButton from "./ListButton";
 
-const ListItems = ({ name, button, date }) => {
+const ListItems = ({ name, button, date, buttonName }) => {
   let ImageStyle = {
     width: "70px",
     height: "70px",
@@ -48,7 +48,7 @@ const ListItems = ({ name, button, date }) => {
           }}
         >
           {button ? (
-            <ListButton title="Join" />
+            <ListButton title={buttonName} />
           ) : (
             <p style={{ color: "#8c8c8c", fontSize: "10px" }}>Today, 2:31pm</p>
           )}

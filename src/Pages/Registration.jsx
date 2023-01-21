@@ -54,7 +54,7 @@ const Registration = () => {
 
   useEffect(() => {
     if (data.userData.userInfo) {
-      nevigate("/chattingup");
+      nevigate("/chattingup/home");
     }
   }, []);
   // firebase functionality start

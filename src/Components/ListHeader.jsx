@@ -12,10 +12,12 @@ const ListHeader = ({ title }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          background: "#5f34f5",
+          color: "#fff",
         }}
       >
         <h3>{title}</h3>
-        <HiDotsVertical style={{ color: "#5f34f5" }} />
+        <HiDotsVertical />
       </Box>
     </>
   );

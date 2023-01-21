@@ -57,7 +57,7 @@ const Login = () => {
 
   useEffect(() => {
     if (data.userData.userInfo) {
-      nevigate("/chattingup");
+      nevigate("/chattingup/home");
     }
   }, []);
   const gmailprovider = new GoogleAuthProvider();

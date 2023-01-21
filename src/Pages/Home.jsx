@@ -4,12 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
 import CommonButton from "../Components/CommonButton";
-
 import { Box, Button, Stack } from "@mui/material";
-
 import { styled } from "@mui/system";
 import { Height } from "@mui/icons-material";
-import Grouplist from "../Components/Grouplist";
+import GroupList from "../Components/GroupList";
+import FriendsList from "../Components/FriendsList";
+import UserList from "../Components/UserList";
+import FriendRequestList from "../Components/FriendRequestList";
+import MyGroupsList from "../Components/MyGroupsList";
+import BlockedUsers from "../Components/BlockedUsers";
 
 const LoginButtonStyle = styled(Button)({
   width: "20%",
@@ -79,12 +82,25 @@ const Home = () => {
             rowGap: "15px",
           }}
         >
-          <Grouplist title="Grpup List" />
-          <Grouplist title="Grpup List" />
-          <Grouplist title="Grpup List" />
-          <Grouplist title="Grpup List" />
-          <Grouplist title="Grpup List" />
-          <Grouplist title="Grpup List" />
+          <GroupList title="Grpup List" button={true} buttonName="Join" />
+
+          <FriendsList title="Friends" button={false} />
+
+          <UserList title="User List" button={true} buttonName="+" />
+
+          <FriendRequestList
+            title="Friend Request"
+            button={true}
+            buttonName="Accept"
+          />
+
+          <MyGroupsList title="My Groups" button={false} />
+
+          <BlockedUsers
+            title="Blocked Users"
+            button={true}
+            buttonName="Unblock"
+          />
         </Box>
       </Box>
     </>
