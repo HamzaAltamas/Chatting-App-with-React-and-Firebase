@@ -7,10 +7,11 @@ import { AiFillMessage } from "react-icons/ai";
 import { IoSettings } from "react-icons/io5";
 import { HiOutlineLogout } from "react-icons/hi";
 import { getAuth, signOut } from "firebase/auth";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
 
 const Sidebar = () => {
+  let userData = useSelector((state) => state);
   let disp = useDispatch();
   let navigate = useNavigate();
   const auth = getAuth();
@@ -77,6 +78,9 @@ const Sidebar = () => {
               src="../src/assets/images/propic.png"
             />
           </Box>
+          <h3 style={{ color: "white", textAlign: "center", padding: "5px 0" }}>
+            {userData.userData.userInfo.displayName}
+          </h3>
           <ul className="sidebar-nav-icons">
             <li>
               <NavLink to="home">

@@ -183,8 +183,12 @@ const Login = () => {
               }
             );
           } else {
-            disp(activeUser(userCredential.user.uid));
-            localStorage.setItem("userInfo", userCredential.user.uid);
+            console.log(userCredential.user);
+            disp(activeUser(userCredential.user));
+            localStorage.setItem(
+              "userInfo",
+              JSON.stringify(userCredential.user)
+            );
             setLoader(true);
             toast.success("Login Successfull!", {
               position: "bottom-center",

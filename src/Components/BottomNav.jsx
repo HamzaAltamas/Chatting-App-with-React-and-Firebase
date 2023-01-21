@@ -49,7 +49,7 @@ const BottomNav = () => {
       >
         <ul className="bottom-nav-icons">
           <li>
-            <NavLink to="/chattingup">
+            <NavLink to="home">
               <FaHome />
             </NavLink>
           </li>

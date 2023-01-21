@@ -14,7 +14,9 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import { ProgressBar } from "react-loader-spinner";
@@ -51,6 +53,7 @@ const Registration = () => {
   let nevigate = useNavigate();
   let data = useSelector((state) => state);
   let [inputname, setInputname] = useState();
+  let [passwordVal, setPasswordVal] = useState("");
 
   useEffect(() => {
     if (data.userData.userInfo) {
@@ -59,6 +62,7 @@ const Registration = () => {
   }, []);
   // firebase functionality start
   const auth = getAuth();
+  const db = getDatabase();
   // firebase functionality end
   let [passIcon, setPassIcon] = useState(false);
   let [loader, setLoader] = useState(false);
@@ -113,6 +117,7 @@ const Registration = () => {
     let num = /[0-9]/;
     let specialChar = /[(!|@|#|$|%|^|&|*|(|)|_|+)]/;
     if (name == "password") {
+      setPasswordVal(value);
       if (!capital.test(value)) {
         setLoader(false);
         setPassIcon(false);
@@ -175,7 +180,7 @@ const Registration = () => {
     let num = /[0-9]/;
     let specialChar = /[(!|@|#|$|%|^|&|*|(|)|_|+)]/;
     if (inputname == "password") {
-      if (!capital.test(value)) {
+      if (!capital.test(passwordVal)) {
         setLoader(false);
         setPassIcon(false);
         setErrorDAta({
@@ -183,7 +188,7 @@ const Registration = () => {
           password: "Please provide a capital letter",
         });
         return;
-      } else if (!lower.test(value)) {
+      } else if (!lower.test(passwordVal)) {
         setLoader(false);
         setPassIcon(false);
         setErrorDAta({
@@ -191,7 +196,7 @@ const Registration = () => {
           password: "Please provide a lowercase letter",
         });
         return;
-      } else if (!num.test(value)) {
+      } else if (!num.test(passwordVal)) {
         setLoader(false);
         setPassIcon(false);
         setErrorDAta({
@@ -199,7 +204,7 @@ const Registration = () => {
           password: "Please provide a number letter",
         });
         return;
-      } else if (!specialChar.test(value)) {
+      } else if (!specialChar.test(passwordVal)) {
         setLoader(false);
         setPassIcon(false);
         setErrorDAta({
@@ -207,13 +212,13 @@ const Registration = () => {
           password: "Please provide a Special Character",
         });
         return;
-      } else if (value.length < 6) {
+      } else if (passwordVal.length < 6) {
         setLoader(false);
         console.log("6 char");
         setPassIcon(false);
         setErrorDAta({
           ...errorData,
-          password: "Password should be than 6 chracters",
+          password: "Password should be more than 6 chracters",
         });
         return;
       } else {
@@ -259,6 +264,12 @@ const Registration = () => {
         regFormData.email,
         regFormData.password
       )
+        .then((userCredential) => {
+          console.log(userCredential);
+          updateProfile(auth.currentUser, {
+            displayName: regFormData.fname,
+          });
+        })
         .then((user) => {
           setLoader(false);
           setRegFormData({
