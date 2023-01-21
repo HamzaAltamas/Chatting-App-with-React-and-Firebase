@@ -4,7 +4,7 @@ import React from "react";
 import { Typography } from "@mui/material";
 import ListButton from "./ListButton";
 
-const ListItems = ({ name, button, date, buttonName }) => {
+const ListItems = ({ name, button, date, buttonName, profession }) => {
   let ImageStyle = {
     width: "70px",
     height: "70px",
@@ -36,8 +36,8 @@ const ListItems = ({ name, button, date, buttonName }) => {
             width: "42%",
           }}
         >
-          <h4>User Name</h4>
-          <p style={{ color: "#8c8c8c", fontSize: "12px" }}>Hi Guys, Wassup!</p>
+          <h4>{name}</h4>
+          <p style={{ color: "#8c8c8c", fontSize: "12px" }}>{profession}</p>
         </Box>
         <Box
           sx={{

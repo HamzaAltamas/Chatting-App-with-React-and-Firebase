@@ -16,7 +16,7 @@ import {
   sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
-import { getDatabase } from "firebase/database";
+import { getDatabase, set, ref, push } from "firebase/database";
 import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import { ProgressBar } from "react-loader-spinner";
@@ -66,6 +66,7 @@ const Registration = () => {
   // firebase functionality end
   let [passIcon, setPassIcon] = useState(false);
   let [loader, setLoader] = useState(false);
+
   // form data start
   // error states start
   let [errorData, setErrorDAta] = useState({
@@ -82,6 +83,7 @@ const Registration = () => {
   let [regFormData, setRegFormData] = useState({
     email: "",
     fname: "",
+    profession: "",
     password: "",
   });
 
@@ -251,6 +253,12 @@ const Registration = () => {
         ...errorData,
         fname: "Name required",
       });
+    } else if (regFormData.profession == "") {
+      setLoader(false);
+      setErrorDAta({
+        ...errorData,
+        profession: "Profession required",
+      });
     } else if (regFormData.password == "") {
       setLoader(false);
       setErrorDAta({
@@ -265,16 +273,22 @@ const Registration = () => {
         regFormData.password
       )
         .then((userCredential) => {
-          console.log(userCredential);
           updateProfile(auth.currentUser, {
             displayName: regFormData.fname,
+          }).then(() => {
+            set(ref(db, "users/" + userCredential.user.uid), {
+              username: userCredential.user.displayName,
+              email: userCredential.user.email,
+              profession: regFormData.profession,
+            });
           });
         })
-        .then((user) => {
+        .then(() => {
           setLoader(false);
           setRegFormData({
             email: "",
             fname: "",
+            profession: "",
             password: "",
           });
           setRegSuccessTxt(
@@ -470,7 +484,26 @@ const Registration = () => {
                       {errorData.fname}
                     </Alert>
                   )}
-
+                  <InputBox
+                    label="Profession"
+                    variant="outlined"
+                    onChange={handleChange}
+                    type="text"
+                    name="profession"
+                    sx={{
+                      width: "100%",
+                      marginTop: "30px",
+                    }}
+                    value={regFormData.profession}
+                  />
+                  {errorData.profession && (
+                    <Alert
+                      severity="error"
+                      sx={{ width: "100%", margin: "10px 0" }}
+                    >
+                      {errorData.profession}
+                    </Alert>
+                  )}
                   <Box
                     sx={{
                       width: "100%",

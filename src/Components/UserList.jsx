@@ -1,9 +1,27 @@
 import { Box } from "@mui/system";
-import React from "react";
+import { getDatabase, onValue, ref } from "firebase/database";
+import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
+import { useSelector } from "react-redux";
 
 const UserList = ({ title, button, buttonName, date }) => {
+  let data = useSelector((state) => state);
+
+  let [userList, setUserList] = useState([]);
+  let db = getDatabase();
+  useEffect(() => {
+    const userRef = ref(db, "users");
+    onValue(userRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((item) => {
+        if (data.userData.userInfo.uid !== item.key) {
+          arr.push(item.val());
+        }
+      });
+      setUserList(arr);
+    });
+  }, []);
   return (
     <>
       <Box
@@ -27,14 +45,16 @@ const UserList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
+            {userList.map((item, index) => (
+              <ListItems
+                key={index}
+                name={item.username}
+                button={button}
+                profession={item.profession}
+                buttonName={buttonName}
+                date={date}
+              />
+            ))}
           </ul>
         </Box>
       </Box>

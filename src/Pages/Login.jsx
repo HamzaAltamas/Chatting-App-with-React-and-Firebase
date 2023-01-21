@@ -184,11 +184,11 @@ const Login = () => {
             );
           } else {
             console.log(userCredential.user);
-            disp(activeUser(userCredential.user));
             localStorage.setItem(
               "userInfo",
               JSON.stringify(userCredential.user)
             );
+            disp(activeUser(JSON.parse(localStorage.getItem("userInfo"))));
             setLoader(true);
             toast.success("Login Successfull!", {
               position: "bottom-center",

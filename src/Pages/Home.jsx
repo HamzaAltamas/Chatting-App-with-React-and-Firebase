@@ -13,6 +13,7 @@ import UserList from "../Components/UserList";
 import FriendRequestList from "../Components/FriendRequestList";
 import MyGroupsList from "../Components/MyGroupsList";
 import BlockedUsers from "../Components/BlockedUsers";
+import SmallDeviceUserInfo from "../Components/SmallDeviceUserInfo";
 
 const LoginButtonStyle = styled(Button)({
   width: "20%",
@@ -82,6 +83,7 @@ const Home = () => {
             rowGap: "15px",
           }}
         >
+          <SmallDeviceUserInfo />
           <GroupList title="Grpup List" button={true} buttonName="Join" />
 
           <FriendsList title="Friends" button={false} />
