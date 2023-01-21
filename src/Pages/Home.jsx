@@ -52,7 +52,16 @@ const Home = () => {
     <>
       <Box
         sx={{
-          width: "100%",
+          width: "15%",
+          height: "100vh",
+          display: { xs: "none", sm: "none", md: "flex" },
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      ></Box>
+      <Box
+        sx={{
+          width: { xs: "100%", sm: "100%", md: "85%" },
           height: "100vh",
 
           display: "flex",
@@ -62,20 +71,20 @@ const Home = () => {
       >
         <Box
           sx={{
-            width: "95%",
+            width: "97%",
             height: "95%",
             display: { md: "flex " },
             flexWrap: "wrap",
             justifyContent: "space-between",
-            gap: "5px",
+            rowGap: "15px",
           }}
         >
-          <Grouplist />
-          <Grouplist />
-          <Grouplist />
-          <Grouplist />
-          <Grouplist />
-          <Grouplist />
+          <Grouplist title="Grpup List" />
+          <Grouplist title="Grpup List" />
+          <Grouplist title="Grpup List" />
+          <Grouplist title="Grpup List" />
+          <Grouplist title="Grpup List" />
+          <Grouplist title="Grpup List" />
         </Box>
       </Box>
     </>

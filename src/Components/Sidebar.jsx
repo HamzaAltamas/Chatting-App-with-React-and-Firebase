@@ -40,6 +40,9 @@ const Sidebar = () => {
           display: { xs: "none", sm: "none", md: "flex" },
           justifyContent: "center",
           alignItems: "center",
+          position: "fixed",
+          top: "0",
+          left: "0",
         }}
       >
         <Box
@@ -76,7 +79,7 @@ const Sidebar = () => {
           </Box>
           <ul className="sidebar-nav-icons">
             <li>
-              <NavLink to="/chattingup">
+              <NavLink to="home">
                 <FaHome />
               </NavLink>
             </li>

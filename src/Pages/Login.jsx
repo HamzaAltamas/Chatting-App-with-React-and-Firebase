@@ -78,7 +78,7 @@ const Login = () => {
         theme: "dark",
       });
       setTimeout(() => {
-        nevigate("/chattingup");
+        nevigate("/chattingup/home");
       }, 3000);
     });
   };
@@ -197,7 +197,7 @@ const Login = () => {
               theme: "dark",
             });
             setTimeout(() => {
-              nevigate("/chattingup");
+              nevigate("/chattingup/home");
             }, 3000);
           }
           // Signed in

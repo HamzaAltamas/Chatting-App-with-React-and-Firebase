@@ -24,8 +24,9 @@ let router = createBrowserRouter(
       <Route path="/registration" element={<Registration />}></Route>
       <Route path="/login" element={<Login />}></Route>
       <Route path="/forgotpass" element={<ForgotPassword />}></Route>
+
       <Route path="/chattingup" element={<Rootlayout />}>
-        <Route index element={<Home />}></Route>
+        <Route path="home" element={<Home />}></Route>
         <Route path="message" element={<Message />}></Route>
         <Route path="notification" element={<Notification />}></Route>
         <Route path="settings" element={<Settings />}></Route>
