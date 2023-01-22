@@ -178,3 +178,11 @@ ul {
   background-color: var(--primaryColorHover);
 }
 /* list b utton styling end */
+
+/* dp modal replace css start */
+.Dp-modal {
+  border: none !important;
+  outline: none !important;
+  font-family: "Nunito", sans-serif !important;
+}
+/* dp modal replace css end */
