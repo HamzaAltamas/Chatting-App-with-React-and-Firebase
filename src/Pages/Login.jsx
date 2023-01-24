@@ -88,7 +88,8 @@ const Login = () => {
         setTimeout(() => {
           nevigate("/chattingup/home");
         }, 3000);
-        localStorage.setItem("userInfo", JSON.stringify(userCredential));
+        disp(activeUser(userCredential.user));
+        localStorage.setItem("userInfo", JSON.stringify(userCredential.user));
       });
     });
   };
@@ -198,7 +199,7 @@ const Login = () => {
               "userInfo",
               JSON.stringify(userCredential.user)
             );
-            disp(activeUser(JSON.parse(localStorage.getItem("userInfo"))));
+            disp(activeUser(userCredential.user));
             setLoader(true);
             toast.success("Login Successfull!", {
               position: "bottom-center",

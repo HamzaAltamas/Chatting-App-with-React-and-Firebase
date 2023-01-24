@@ -84,6 +84,7 @@ const Sidebar = () => {
           photoURL: downloadURL,
         }).then((e) => {
           disp(activeUser(auth.currentUser));
+          console.log(auth.currentUser);
           localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
           console.log(userData.userData.userInfo);
         });
@@ -176,7 +177,7 @@ const Sidebar = () => {
             />
           </Box>
           <h3 style={{ color: "white", textAlign: "center", padding: "5px 0" }}>
-            {userData.userData.userInfo.user.displayName}
+            {userData.userData.userInfo.displayName}
           </h3>
           <ul className="sidebar-nav-icons">
             <li>
