@@ -4,7 +4,16 @@ import React from "react";
 import { Typography } from "@mui/material";
 import ListButton from "./ListButton";
 
-const ListItems = ({ name, button, date, buttonName, profession }) => {
+const ListItems = ({
+  name,
+  button,
+  date,
+  buttonName,
+  profession,
+  onClick,
+  doubleButton,
+  secontBtnName,
+}) => {
   let ImageStyle = {
     width: "70px",
     height: "70px",
@@ -47,10 +56,19 @@ const ListItems = ({ name, button, date, buttonName, profession }) => {
             justifyContent: "end",
           }}
         >
-          {button ? (
-            <ListButton title={buttonName} />
-          ) : (
+          {!button ? (
             <p style={{ color: "#8c8c8c", fontSize: "10px" }}>Today, 2:31pm</p>
+          ) : !doubleButton ? (
+            <ListButton onClick={onClick} title={buttonName} />
+          ) : (
+            <div style={{ display: "flex", columnGap: "10px" }}>
+              <ListButton onClick={onClick} title={buttonName} />
+              <ListButton
+                onClick={onClick}
+                secontBtnName={secontBtnName}
+                title={buttonName}
+              />
+            </div>
           )}
         </Box>
       </Box>

@@ -1,5 +1,5 @@
 import { Box } from "@mui/system";
-import { getDatabase, onValue, ref } from "firebase/database";
+import { getDatabase, onValue, ref, set, push } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 
 const UserList = ({ title, button, buttonName, date }) => {
   let data = useSelector((state) => state);
+  let [friendreq, setfriendreq] = useState([]);
 
   let [userList, setUserList] = useState([]);
   let db = getDatabase();
@@ -16,12 +17,38 @@ const UserList = ({ title, button, buttonName, date }) => {
       let arr = [];
       snapshot.forEach((item) => {
         if (data.userData.userInfo.uid !== item.key) {
-          arr.push(item.val());
+          arr.push({ ...item.val(), id: item.key });
         }
       });
+      console.log(arr);
       setUserList(arr);
     });
   }, []);
+
+  // frndreq data read for send req and pending button show
+  useEffect(() => {
+    const userRef = ref(db, "friendRequest");
+    onValue(userRef, (snapshot) => {
+      let arry = [];
+      snapshot.forEach((items) => {
+        arry.push(items.val().recieverID + items.val().senderUid);
+      });
+      console.log(arry);
+      setfriendreq(arry);
+    });
+  }, []);
+
+  // friend req functionality start
+  let handleFriendRequest = (info) => {
+    console.log(info);
+    set(push(ref(db, "friendRequest")), {
+      senderUid: data.userData.userInfo.uid,
+      senderName: data.userData.userInfo.displayName,
+      recieverName: info.username,
+      recieverID: info.id,
+    });
+  };
+  // friend req functionality end
   return (
     <>
       <Box
@@ -45,16 +72,30 @@ const UserList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            {userList.map((item, index) => (
-              <ListItems
-                key={index}
-                name={item.username}
-                button={button}
-                profession={item.profession}
-                buttonName={buttonName}
-                date={date}
-              />
-            ))}
+            {userList.map((useritem, index) =>
+              friendreq.includes(useritem.id + data.userData.userInfo.uid) ||
+              friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
+                <ListItems
+                  onClick={() => handleFriendRequest(useritem)}
+                  key={index}
+                  name={useritem.username}
+                  button={button}
+                  profession={useritem.profession}
+                  buttonName="Pending"
+                  date={date}
+                />
+              ) : (
+                <ListItems
+                  onClick={() => handleFriendRequest(useritem)}
+                  key={index}
+                  name={useritem.username}
+                  button={button}
+                  profession={useritem.profession}
+                  buttonName="+"
+                  date={date}
+                />
+              )
+            )}
           </ul>
         </Box>
       </Box>

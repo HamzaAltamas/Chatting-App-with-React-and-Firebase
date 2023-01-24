@@ -66,7 +66,7 @@ const Login = () => {
   const gmailprovider = new GoogleAuthProvider();
   let gmailClick = () => {
     signInWithPopup(auth, gmailprovider).then((userCredential) => {
-      console.log(userCredential.user.uid);
+      console.log(userCredential);
       set(ref(db, "users/" + userCredential.user.uid), {
         username: userCredential.user.displayName,
         email: userCredential.user.email,

@@ -88,12 +88,13 @@ const Home = () => {
 
           <FriendsList title="Friends" button={false} />
 
-          <UserList title="User List" button={true} buttonName="+" />
+          <UserList title="User List" button={true} />
 
           <FriendRequestList
             title="Friend Request"
             button={true}
             buttonName="Accept"
+            secontBtnName="Reject"
           />
 
           <MyGroupsList title="My Groups" button={false} />

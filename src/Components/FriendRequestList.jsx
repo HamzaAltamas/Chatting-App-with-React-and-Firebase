@@ -1,9 +1,31 @@
 import { Box, height } from "@mui/system";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
+import { getDatabase, ref, onValue } from "firebase/database";
+import { useSelector } from "react-redux";
 
-const FriendRequestList = ({ title, button, buttonName, date }) => {
+const FriendRequestList = ({
+  title,
+  button,
+  buttonName,
+  date,
+  secontBtnName,
+}) => {
+  let userData = useSelector((state) => state);
+  let [FriendReq, setFriendReq] = useState([]);
+  useEffect(() => {
+    const db = getDatabase();
+    const friendReqRef = ref(db, "friendRequest");
+    onValue(friendReqRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().recieverID == userData.userData.userInfo.uid)
+          arr.push(items.val());
+      });
+      setFriendReq(arr);
+    });
+  }, []);
   return (
     <>
       <Box
@@ -27,14 +49,32 @@ const FriendRequestList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
+            {FriendReq.length === 0 ? (
+              <h4
+                style={{
+                  textAlign: "center",
+                  padding: "20px",
+                  color: "#d1d1d1",
+                }}
+              >
+                No Friend Request
+              </h4>
+            ) : (
+              FriendReq.map((item, index) => {
+                console.log(item);
+                return (
+                  <ListItems
+                    key={index}
+                    doubleButton={true}
+                    button={button}
+                    name={item.senderName}
+                    buttonName={buttonName}
+                    date={date}
+                    secontBtnName={secontBtnName}
+                  />
+                );
+              })
+            )}
           </ul>
         </Box>
       </Box>
