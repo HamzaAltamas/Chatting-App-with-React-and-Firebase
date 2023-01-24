@@ -16,11 +16,13 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
 } from "firebase/auth";
+
 import PasswordInput from "../Components/PasswordInput";
 import { ProgressBar } from "react-loader-spinner";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
+import { getDatabase, set, ref } from "firebase/database";
 
 const LoginButtonStyle = styled(Button)({
   width: "80%",
@@ -54,6 +56,7 @@ const Login = () => {
   const auth = getAuth();
   let nevigate = useNavigate();
   let data = useSelector((state) => state);
+  let db = getDatabase();
 
   useEffect(() => {
     if (data.userData.userInfo) {
@@ -62,24 +65,31 @@ const Login = () => {
   }, []);
   const gmailprovider = new GoogleAuthProvider();
   let gmailClick = () => {
-    signInWithPopup(auth, gmailprovider).then((result) => {
-      disp(activeUser(result.user.uid));
-      localStorage.setItem("userInfo", result.user.uid);
-      setLoader(true);
-      console.log("ggle dn");
-      toast.success("Successfully sign in with google", {
-        position: "bottom-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
+    signInWithPopup(auth, gmailprovider).then((userCredential) => {
+      console.log(userCredential.user.uid);
+      set(ref(db, "users/" + userCredential.user.uid), {
+        username: userCredential.user.displayName,
+        email: userCredential.user.email,
+      }).then(() => {
+        disp(activeUser(userCredential));
+
+        setLoader(true);
+
+        toast.success("Successfully sign in with google", {
+          position: "bottom-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+        setTimeout(() => {
+          nevigate("/chattingup/home");
+        }, 3000);
+        localStorage.setItem("userInfo", JSON.stringify(userCredential));
       });
-      setTimeout(() => {
-        nevigate("/chattingup/home");
-      }, 3000);
     });
   };
 

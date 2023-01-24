@@ -1,21 +1,27 @@
 import { Box, Input, Stack } from "@mui/material";
 import React, { useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { json, Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import Image from "./Image";
 import { FaHome, FaBell } from "react-icons/fa";
 import { AiFillMessage } from "react-icons/ai";
 import { IoSettings } from "react-icons/io5";
 import { HiOutlineLogout } from "react-icons/hi";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, updateProfile } from "firebase/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
 import { BiEdit } from "react-icons/bi";
 import InputBox from "../Components/InputBox";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
-
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+import ListButton from "./ListButton";
+import {
+  getStorage,
+  ref,
+  uploadString,
+  getDownloadURL,
+} from "firebase/storage";
 
 const style = {
   position: "absolute",
@@ -33,6 +39,7 @@ const Sidebar = () => {
   let disp = useDispatch();
   let navigate = useNavigate();
   const auth = getAuth();
+  let [dpurl, setDpurl] = useState("");
   // react cropper functionality start
   const [image, setImage] = useState();
   const [cropData, setCropData] = useState("#");
@@ -47,6 +54,7 @@ const Sidebar = () => {
     } else if (e.target) {
       files = e.target.files;
     }
+    console.log(files);
     const reader = new FileReader();
     reader.onload = () => {
       setImage(reader.result);
@@ -58,6 +66,29 @@ const Sidebar = () => {
     if (typeof cropper !== "undefined") {
       setCropData(cropper.getCroppedCanvas().toDataURL());
     }
+    const storage = getStorage();
+    const dpRef = ref(
+      storage,
+      `profilepicture/${userData.userData.userInfo.uid}`
+    ); //base64 image upload on upload button
+    // Data URL string
+    const cropedDp = cropper.getCroppedCanvas().toDataURL();
+    uploadString(dpRef, cropedDp, "data_url").then((snapshot) => {
+      console.log("Uploaded a data_url string!");
+      setOpen(false);
+      setImage();
+      getDownloadURL(dpRef).then((downloadURL) => {
+        console.log("File available at", downloadURL);
+        setDpurl(downloadURL);
+        updateProfile(auth.currentUser, {
+          photoURL: downloadURL,
+        }).then((e) => {
+          disp(activeUser(auth.currentUser));
+          localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
+          console.log(userData.userData.userInfo);
+        });
+      });
+    });
   };
 
   // react cropper functionality end
@@ -141,11 +172,11 @@ const Sidebar = () => {
                 display: "block",
                 borderRadius: "50%",
               }}
-              src={cropData}
+              src={userData.userData.userInfo.photoURL}
             />
           </Box>
           <h3 style={{ color: "white", textAlign: "center", padding: "5px 0" }}>
-            {userData.userData.userInfo.displayName}
+            {userData.userData.userInfo.user.displayName}
           </h3>
           <ul className="sidebar-nav-icons">
             <li>
@@ -253,9 +284,7 @@ const Sidebar = () => {
               guides={true}
             />
           )}
-          <button style={{ float: "right" }} onClick={getCropData}>
-            Crop Image
-          </button>
+          <ListButton title="Upload" onClick={getCropData} />
         </Box>
       </Modal>
     </>
