@@ -28,15 +28,13 @@ const style = {
   p: 4,
 };
 
-const defaultSrc =
-  "https://raw.githubusercontent.com/roadmanfong/react-cropper/master/example/img/child.jpg";
 const Sidebar = () => {
   let userData = useSelector((state) => state);
   let disp = useDispatch();
   let navigate = useNavigate();
   const auth = getAuth();
   // react cropper functionality start
-  const [image, setImage] = useState(defaultSrc);
+  const [image, setImage] = useState();
   const [cropData, setCropData] = useState("#");
   const [cropper, setCropper] = useState();
 
@@ -194,36 +192,67 @@ const Sidebar = () => {
               padding: "10px 0",
             }}
           >
-            <Box
-              //   profile picture image
-              sx={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "50%",
-                overflow: "hidden",
-              }}
-              className="img-preview"
-            ></Box>
+            {image ? (
+              <Box
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                }}
+                className="img-preview"
+              ></Box>
+            ) : userData.userData.userInfo.photoURL ? (
+              <Box
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  imageStyle={{ width: "100%", height: "100%" }}
+                  src={userData.userData.userInfo.photoURL}
+                />
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  imageStyle={{ width: "100%", height: "100%" }}
+                  src="../src/assets/images/skel.png"
+                />
+              </Box>
+            )}
           </Box>
           <InputBox onChange={cropperChange} type="file" />
-          <Cropper
-            style={{ height: 400, width: "100%" }}
-            zoomTo={0.5}
-            initialAspectRatio={1}
-            preview=".img-preview"
-            src={image}
-            viewMode={1}
-            minCropBoxHeight={10}
-            minCropBoxWidth={10}
-            background={false}
-            responsive={true}
-            autoCropArea={1}
-            checkOrientation={false} // https://github.com/fengyuanchen/cropperjs/issues/671
-            onInitialized={(instance) => {
-              setCropper(instance);
-            }}
-            guides={true}
-          />
+          {image && (
+            <Cropper
+              style={{ height: 400, width: "100%" }}
+              zoomTo={0.5}
+              initialAspectRatio={1}
+              preview=".img-preview"
+              src={image}
+              viewMode={1}
+              minCropBoxHeight={10}
+              minCropBoxWidth={10}
+              background={false}
+              responsive={true}
+              autoCropArea={1}
+              checkOrientation={false} // https://github.com/fengyuanchen/cropperjs/issues/671
+              onInitialized={(instance) => {
+                setCropper(instance);
+              }}
+              guides={true}
+            />
+          )}
           <button style={{ float: "right" }} onClick={getCropData}>
             Crop Image
           </button>

@@ -185,4 +185,8 @@ ul {
   outline: none !important;
   font-family: "Nunito", sans-serif !important;
 }
+.img-preview {
+  width: 70px !important;
+  height: 70px !important;
+}
 /* dp modal replace css end */
