@@ -76,7 +76,7 @@ const UserList = ({ title, button, buttonName, date }) => {
               friendreq.includes(useritem.id + data.userData.userInfo.uid) ||
               friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
                 <ListItems
-                  onClick={() => handleFriendRequest(useritem)}
+                  imgsrc={useritem.photoURL}
                   key={index}
                   name={useritem.username}
                   button={button}
@@ -86,6 +86,7 @@ const UserList = ({ title, button, buttonName, date }) => {
                 />
               ) : (
                 <ListItems
+                  imgsrc={useritem.photoURL}
                   onClick={() => handleFriendRequest(useritem)}
                   key={index}
                   name={useritem.username}

@@ -43,14 +43,17 @@ const SmallDeviceUserInfo = () => {
             alignItems: "center",
           }}
         >
-          <Image imageStyle={ImageStyle} src="../src/assets/images/dp.png" />
+          <Image
+            imageStyle={ImageStyle}
+            src={userData.userData.userInfo.photoURL}
+          />
         </Box>
         <Box
           sx={{
             width: "42%",
           }}
         >
-          <h2>{userData.userData.userInfo.displayName}</h2>
+          <h5>{userData.userData.userInfo.displayName}</h5>
           <p style={{ color: "#8c8c8c", fontSize: "12px" }}>{profession}</p>
         </Box>
         <Box

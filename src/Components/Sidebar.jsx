@@ -1,4 +1,4 @@
-import { Box, Input, Stack } from "@mui/material";
+import { Avatar, Box, Input, Stack } from "@mui/material";
 import React, { useState } from "react";
 import { json, Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import Image from "./Image";
@@ -18,11 +18,11 @@ import Modal from "@mui/material/Modal";
 import ListButton from "./ListButton";
 import {
   getStorage,
-  ref,
+  ref as storegRef,
   uploadString,
   getDownloadURL,
 } from "firebase/storage";
-
+import { getDatabase, ref, update } from "@firebase/database";
 const style = {
   position: "absolute",
   top: "50%",
@@ -35,6 +35,7 @@ const style = {
 };
 
 const Sidebar = () => {
+  let db = getDatabase();
   let userData = useSelector((state) => state);
   let disp = useDispatch();
   let navigate = useNavigate();
@@ -67,7 +68,7 @@ const Sidebar = () => {
       setCropData(cropper.getCroppedCanvas().toDataURL());
     }
     const storage = getStorage();
-    const dpRef = ref(
+    const dpRef = storegRef(
       storage,
       `profilepicture/${userData.userData.userInfo.uid}`
     ); //base64 image upload on upload button
@@ -78,15 +79,18 @@ const Sidebar = () => {
       setOpen(false);
       setImage();
       getDownloadURL(dpRef).then((downloadURL) => {
-        console.log("File available at", downloadURL);
         setDpurl(downloadURL);
         updateProfile(auth.currentUser, {
           photoURL: downloadURL,
         }).then((e) => {
-          disp(activeUser(auth.currentUser));
-          console.log(auth.currentUser);
-          localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
-          console.log(userData.userData.userInfo);
+          update(ref(db, "users/" + userData.userData.userInfo.uid), {
+            photoURL: downloadURL,
+          }).then(() => {
+            navigate("/chattingup/home");
+            console.log("haaaaaaaaaaaaaaaaaaaa");
+            disp(activeUser(auth.currentUser));
+            localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
+          });
         });
       });
     });
@@ -151,7 +155,7 @@ const Sidebar = () => {
               height: "80px",
 
               borderRadius: "50%",
-              background: "red",
+
               position: "relative",
             }}
           >
@@ -166,15 +170,15 @@ const Sidebar = () => {
                 color: "#fff",
               }}
             />
-            <Image
-              imageStyle={{
-                width: "100%",
-                height: "100%",
-                display: "block",
-                borderRadius: "50%",
-              }}
-              src={userData.userData.userInfo.photoURL}
-            />
+            {userData.userData.userInfo.photoURL ? (
+              <Avatar
+                alt="Remy Sharp"
+                src={userData.userData.userInfo.photoURL}
+                sx={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Avatar alt="Remy Sharp" sx={{ width: "100%", height: "100%" }} />
+            )}
           </Box>
           <h3 style={{ color: "white", textAlign: "center", padding: "5px 0" }}>
             {userData.userData.userInfo.displayName}

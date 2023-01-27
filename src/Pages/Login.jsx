@@ -22,7 +22,7 @@ import { ProgressBar } from "react-loader-spinner";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { activeUser } from "../Slices/userSlices";
-import { getDatabase, set, ref } from "firebase/database";
+import { getDatabase, set, ref, update } from "firebase/database";
 
 const LoginButtonStyle = styled(Button)({
   width: "80%",
@@ -70,7 +70,9 @@ const Login = () => {
       set(ref(db, "users/" + userCredential.user.uid), {
         username: userCredential.user.displayName,
         email: userCredential.user.email,
+        photoURL: userCredential.user.photoURL,
       }).then(() => {
+        console.log("haaaaaaaaaaaaaaaaaaaa");
         disp(activeUser(userCredential));
 
         setLoader(true);

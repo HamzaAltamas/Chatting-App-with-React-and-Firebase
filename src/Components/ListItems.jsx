@@ -1,7 +1,7 @@
 import Image from "../Components/Image";
 import { Box } from "@mui/system";
 import React from "react";
-import { Typography } from "@mui/material";
+import { Avatar, Typography } from "@mui/material";
 import ListButton from "./ListButton";
 
 const ListItems = ({
@@ -13,6 +13,7 @@ const ListItems = ({
   onClick,
   doubleButton,
   secontBtnName,
+  imgsrc,
 }) => {
   let ImageStyle = {
     width: "70px",
@@ -38,7 +39,15 @@ const ListItems = ({
             alignItems: "center",
           }}
         >
-          <Image imageStyle={ImageStyle} src="../src/assets/images/dp.png" />
+          {imgsrc ? (
+            <Avatar
+              alt="Remy Sharp"
+              src={imgsrc}
+              sx={{ width: 56, height: 56 }}
+            />
+          ) : (
+            <Avatar alt="Remy Sharp" sx={{ width: 56, height: 56 }} />
+          )}
         </Box>
         <Box
           sx={{
