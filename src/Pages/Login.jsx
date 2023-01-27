@@ -63,6 +63,11 @@ const Login = () => {
       nevigate("/chattingup/home");
     }
   }, []);
+  useEffect(() => {
+    if (!data.userData.userInfo) {
+      nevigate("/login");
+    }
+  }, []);
   const gmailprovider = new GoogleAuthProvider();
   let gmailClick = () => {
     signInWithPopup(auth, gmailprovider).then((userCredential) => {

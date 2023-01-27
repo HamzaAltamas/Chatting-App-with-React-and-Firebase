@@ -1,5 +1,12 @@
 import { Box } from "@mui/system";
-import { getDatabase, onValue, ref, set, push } from "firebase/database";
+import {
+  getDatabase,
+  onValue,
+  ref,
+  set,
+  push,
+  remove,
+} from "firebase/database";
 import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
@@ -8,6 +15,7 @@ import { useSelector } from "react-redux";
 const UserList = ({ title, button, buttonName, date }) => {
   let data = useSelector((state) => state);
   let [friendreq, setfriendreq] = useState([]);
+  let [friendreqid, setFriendreqId] = useState();
 
   let [userList, setUserList] = useState([]);
   let db = getDatabase();
@@ -20,7 +28,7 @@ const UserList = ({ title, button, buttonName, date }) => {
           arr.push({ ...item.val(), id: item.key });
         }
       });
-      console.log(arr);
+
       setUserList(arr);
     });
   }, []);
@@ -32,8 +40,9 @@ const UserList = ({ title, button, buttonName, date }) => {
       let arry = [];
       snapshot.forEach((items) => {
         arry.push(items.val().recieverID + items.val().senderUid);
+        setFriendreqId(items.key);
       });
-      console.log(arry);
+
       setfriendreq(arry);
     });
   }, []);
@@ -42,13 +51,24 @@ const UserList = ({ title, button, buttonName, date }) => {
   let handleFriendRequest = (info) => {
     console.log(info);
     set(push(ref(db, "friendRequest")), {
+      senderPhoto: data.userData.userInfo.photoURL
+        ? data.userData.userInfo.photoURL
+        : "",
       senderUid: data.userData.userInfo.uid,
       senderName: data.userData.userInfo.displayName,
+      recieverPhoto: info.photoURL ? info.photoURL : "",
       recieverName: info.username,
       recieverID: info.id,
     });
   };
   // friend req functionality end
+
+  // cancel friend red data from database
+  let cancelRequest = (id) => {
+    console.log(id);
+    remove(ref(db, "friendRequest/" + id));
+  };
+  // cancel friend req data from database
   return (
     <>
       <Box
@@ -76,12 +96,13 @@ const UserList = ({ title, button, buttonName, date }) => {
               friendreq.includes(useritem.id + data.userData.userInfo.uid) ||
               friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
                 <ListItems
+                  onClick={() => cancelRequest(friendreqid)}
                   imgsrc={useritem.photoURL}
                   key={index}
                   name={useritem.username}
                   button={button}
                   profession={useritem.profession}
-                  buttonName="Pending"
+                  buttonName="Cancel Request"
                   date={date}
                 />
               ) : (

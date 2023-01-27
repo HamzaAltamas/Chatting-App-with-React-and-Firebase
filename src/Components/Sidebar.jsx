@@ -1,5 +1,5 @@
-import { Avatar, Box, Input, Stack } from "@mui/material";
-import React, { useState } from "react";
+import { Avatar, Box, IconButton, Input, Stack } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { json, Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import Image from "./Image";
 import { FaHome, FaBell } from "react-icons/fa";
@@ -23,6 +23,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import { getDatabase, ref, update } from "@firebase/database";
+import { PhotoCamera } from "@mui/icons-material";
 const style = {
   position: "absolute",
   top: "50%",
@@ -87,7 +88,6 @@ const Sidebar = () => {
             photoURL: downloadURL,
           }).then(() => {
             navigate("/chattingup/home");
-            console.log("haaaaaaaaaaaaaaaaaaaa");
             disp(activeUser(auth.currentUser));
             localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
           });
@@ -97,6 +97,18 @@ const Sidebar = () => {
   };
 
   // react cropper functionality end
+
+  // delete profile picture
+  let deleteDp = () => {
+    updateProfile(auth.currentUser, {
+      photoURL: "",
+    }).then(() => {
+      disp(activeUser(auth.currentUser));
+      localStorage.setItem("userInfo", JSON.stringify(auth.currentUser));
+    });
+    setOpen(false);
+    navigate("/chattingup/home");
+  };
 
   // modal functionality start
   const [open, setOpen] = React.useState(false);
@@ -151,8 +163,8 @@ const Sidebar = () => {
           <Box
             //   profile picture image
             sx={{
-              width: "80px",
-              height: "80px",
+              width: "100px",
+              height: "100px",
 
               borderRadius: "50%",
 
@@ -268,7 +280,20 @@ const Sidebar = () => {
               </Box>
             )}
           </Box>
-          <InputBox onChange={cropperChange} type="file" />
+
+          <IconButton
+            color="primary"
+            aria-label="upload picture"
+            component="label"
+          >
+            <input
+              hidden
+              accept="image/*"
+              type="file"
+              onChange={cropperChange}
+            />
+            <PhotoCamera />
+          </IconButton>
           {image && (
             <Cropper
               style={{ height: 400, width: "100%" }}
@@ -279,7 +304,7 @@ const Sidebar = () => {
               viewMode={1}
               minCropBoxHeight={10}
               minCropBoxWidth={10}
-              background={false}
+              background={true}
               responsive={true}
               autoCropArea={1}
               checkOrientation={false} // https://github.com/fengyuanchen/cropperjs/issues/671
@@ -289,7 +314,10 @@ const Sidebar = () => {
               guides={true}
             />
           )}
-          <ListButton title="Upload" onClick={getCropData} />
+          <Box sx={{ display: "flex", columnGap: "10px", marginTop: "10px" }}>
+            <ListButton title="Upload" onClick={getCropData} />
+            <ListButton title="Delete" onClick={deleteDp} />
+          </Box>
         </Box>
       </Modal>
     </>

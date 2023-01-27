@@ -2,7 +2,7 @@ import { Box, height } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, remove } from "firebase/database";
 import { useSelector } from "react-redux";
 
 const FriendRequestList = ({
@@ -14,18 +14,28 @@ const FriendRequestList = ({
 }) => {
   let userData = useSelector((state) => state);
   let [FriendReq, setFriendReq] = useState([]);
+  let [rejectReq, setRejectReq] = useState();
+  let db = getDatabase();
   useEffect(() => {
-    const db = getDatabase();
+    let db = getDatabase();
     const friendReqRef = ref(db, "friendRequest");
     onValue(friendReqRef, (snapshot) => {
       let arr = [];
       snapshot.forEach((items) => {
-        if (items.val().recieverID == userData.userData.userInfo.uid)
+        if (items.val().recieverID == userData.userData.userInfo.uid) {
           arr.push(items.val());
+        }
+        console.log(items.key);
+        setRejectReq(items.key);
       });
       setFriendReq(arr);
     });
   }, []);
+
+  // reject reequest
+  let rejectRequest = (id) => {
+    remove(ref(db, "friendRequest/" + id));
+  };
   return (
     <>
       <Box
@@ -68,9 +78,11 @@ const FriendRequestList = ({
                     doubleButton={true}
                     button={button}
                     name={item.senderName}
+                    imgsrc={item.senderPhoto}
                     buttonName={buttonName}
                     date={date}
                     secontBtnName={secontBtnName}
+                    secondButtonOnclick={() => rejectRequest(rejectReq)}
                   />
                 );
               })

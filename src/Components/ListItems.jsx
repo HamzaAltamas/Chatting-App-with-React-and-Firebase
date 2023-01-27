@@ -13,6 +13,7 @@ const ListItems = ({
   onClick,
   doubleButton,
   secontBtnName,
+  secondButtonOnclick,
   imgsrc,
 }) => {
   let ImageStyle = {
@@ -33,7 +34,7 @@ const ListItems = ({
       >
         <Box
           sx={{
-            width: "28%",
+            width: "15%",
 
             display: "flex",
             alignItems: "center",
@@ -46,7 +47,7 @@ const ListItems = ({
               sx={{ width: 56, height: 56 }}
             />
           ) : (
-            <Avatar alt="Remy Sharp" sx={{ width: 56, height: 56 }} />
+            <Avatar sx={{ width: 56, height: 56 }} />
           )}
         </Box>
         <Box
@@ -73,7 +74,7 @@ const ListItems = ({
             <div style={{ display: "flex", columnGap: "10px" }}>
               <ListButton onClick={onClick} title={buttonName} />
               <ListButton
-                onClick={onClick}
+                onClick={secondButtonOnclick}
                 secontBtnName={secontBtnName}
                 title={buttonName}
               />
