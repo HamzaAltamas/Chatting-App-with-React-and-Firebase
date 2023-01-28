@@ -49,7 +49,6 @@ const UserList = ({ title, button, buttonName, date }) => {
 
   // friend req functionality start
   let handleFriendRequest = (info) => {
-    console.log(info);
     set(push(ref(db, "friendRequest")), {
       senderPhoto: data.userData.userInfo.photoURL
         ? data.userData.userInfo.photoURL

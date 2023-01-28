@@ -2,7 +2,14 @@ import { Box, height } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
-import { getDatabase, ref, onValue, remove } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  remove,
+  set,
+  push,
+} from "firebase/database";
 import { useSelector } from "react-redux";
 
 const FriendRequestList = ({
@@ -14,7 +21,7 @@ const FriendRequestList = ({
 }) => {
   let userData = useSelector((state) => state);
   let [FriendReq, setFriendReq] = useState([]);
-  let [rejectReq, setRejectReq] = useState();
+
   let db = getDatabase();
   useEffect(() => {
     let db = getDatabase();
@@ -23,10 +30,8 @@ const FriendRequestList = ({
       let arr = [];
       snapshot.forEach((items) => {
         if (items.val().recieverID == userData.userData.userInfo.uid) {
-          arr.push(items.val());
+          arr.push({ ...items.val(), id: items.key });
         }
-        console.log(items.key);
-        setRejectReq(items.key);
       });
       setFriendReq(arr);
     });
@@ -35,6 +40,17 @@ const FriendRequestList = ({
   // reject reequest
   let rejectRequest = (id) => {
     remove(ref(db, "friendRequest/" + id));
+  };
+  // accept request functionality added
+  let acceptReq = (acceptInfo) => {
+    set(push(ref(db, "friendsList")), {
+      ...acceptInfo,
+      date: `${new Date().getDate()}/${
+        new Date().getMonth() + 1
+      }/${new Date().getFullYear()}`,
+    }).then(() => {
+      remove(ref(db, "friendRequest/" + acceptInfo.id));
+    });
   };
   return (
     <>
@@ -71,7 +87,6 @@ const FriendRequestList = ({
               </h4>
             ) : (
               FriendReq.map((item, index) => {
-                console.log(item);
                 return (
                   <ListItems
                     key={index}
@@ -82,7 +97,8 @@ const FriendRequestList = ({
                     buttonName={buttonName}
                     date={date}
                     secontBtnName={secontBtnName}
-                    secondButtonOnclick={() => rejectRequest(rejectReq)}
+                    secondButtonOnclick={() => rejectRequest(item.id)}
+                    onClick={() => acceptReq(item)}
                   />
                 );
               })
