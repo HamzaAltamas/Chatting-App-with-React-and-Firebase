@@ -56,7 +56,9 @@ const ListItems = ({
           }}
         >
           <h4>{name}</h4>
-          <p style={{ color: "#8c8c8c", fontSize: "12px" }}>{profession}</p>
+          <p style={{ color: "#8c8c8c", fontSize: "12px" }}>
+            {date ? date : profession}
+          </p>
         </Box>
         <Box
           sx={{
@@ -67,7 +69,7 @@ const ListItems = ({
           }}
         >
           {!button ? (
-            <p style={{ color: "#8c8c8c", fontSize: "10px" }}>Today, 2:31pm</p>
+            <p style={{ color: "#8c8c8c", fontSize: "10px" }}>{date}</p>
           ) : !doubleButton ? (
             <ListButton onClick={onClick} title={buttonName} />
           ) : (

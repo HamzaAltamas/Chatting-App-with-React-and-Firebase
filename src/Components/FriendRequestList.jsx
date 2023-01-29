@@ -97,8 +97,8 @@ const FriendRequestList = ({
                     buttonName={buttonName}
                     date={date}
                     secontBtnName={secontBtnName}
-                    secondButtonOnclick={() => rejectRequest(item.id)}
                     onClick={() => acceptReq(item)}
+                    secondButtonOnclick={() => rejectRequest(item.id)}
                   />
                 );
               })
