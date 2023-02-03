@@ -16,6 +16,8 @@ const UserList = ({ title, button, buttonName, date }) => {
   let data = useSelector((state) => state);
   let [friendreq, setfriendreq] = useState([]);
   let [friendreqid, setFriendreqId] = useState();
+  let [friends, setFriends] = useState([]);
+  let [friendId, setFriendID] = useState();
 
   let [userList, setUserList] = useState([]);
   let db = getDatabase();
@@ -47,6 +49,20 @@ const UserList = ({ title, button, buttonName, date }) => {
     });
   }, []);
 
+  // frnds data read for show friend in user4list
+  useEffect(() => {
+    const userRef = ref(db, "friendsList");
+    onValue(userRef, (snapshot) => {
+      let arry = [];
+      snapshot.forEach((items) => {
+        arry.push(items.val().recieverID + items.val().senderUid);
+        setFriendID(items.key);
+      });
+
+      setFriends(arry);
+    });
+  }, []);
+
   // friend req functionality start
   let handleFriendRequest = (info) => {
     set(push(ref(db, "friendRequest")), {
@@ -68,6 +84,11 @@ const UserList = ({ title, button, buttonName, date }) => {
     remove(ref(db, "friendRequest/" + id));
   };
   // cancel friend req data from database
+
+  // usnfriend functionality
+  let handleUnfriend = (id) => {
+    remove(ref(db, "friendsList/" + id));
+  };
   return (
     <>
       <Box
@@ -92,8 +113,22 @@ const UserList = ({ title, button, buttonName, date }) => {
         >
           <ul>
             {userList.map((useritem, index) =>
-              friendreq.includes(useritem.id + data.userData.userInfo.uid) ||
-              friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
+              friends.includes(useritem.id + data.userData.userInfo.uid) ||
+              friends.includes(data.userData.userInfo.uid + useritem.id) ? (
+                <ListItems
+                  imgsrc={useritem.photoURL}
+                  key={index}
+                  name={useritem.username}
+                  button={button}
+                  profession={useritem.profession}
+                  buttonName="Unfriend"
+                  onClick={() => handleUnfriend(friendId)}
+                  date={date}
+                />
+              ) : friendreq.includes(
+                  useritem.id + data.userData.userInfo.uid
+                ) ||
+                friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
                 <ListItems
                   onClick={() => cancelRequest(friendreqid)}
                   imgsrc={useritem.photoURL}
