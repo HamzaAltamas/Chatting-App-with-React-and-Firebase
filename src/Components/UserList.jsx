@@ -18,6 +18,7 @@ const UserList = ({ title, button, buttonName, date }) => {
   let [friendreqid, setFriendreqId] = useState();
   let [friends, setFriends] = useState([]);
   let [friendId, setFriendID] = useState();
+  let [blockUser, setBlockuser] = useState([]);
 
   let [userList, setUserList] = useState([]);
   let db = getDatabase();
@@ -89,6 +90,18 @@ const UserList = ({ title, button, buttonName, date }) => {
   let handleUnfriend = (id) => {
     remove(ref(db, "friendsList/" + id));
   };
+  // block user show in user list
+  useEffect(() => {
+    let db = getDatabase();
+    const friendListRef = ref(db, "blockUser");
+    onValue(friendListRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        arr.push(items.val().blockID + items.val().blockbyID);
+      });
+      setBlockuser(arr);
+    });
+  }, []);
   return (
     <>
       <Box
@@ -112,6 +125,7 @@ const UserList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
+            {console.log(blockUser)}
             {userList.map((useritem, index) =>
               friends.includes(useritem.id + data.userData.userInfo.uid) ||
               friends.includes(data.userData.userInfo.uid + useritem.id) ? (
@@ -138,6 +152,18 @@ const UserList = ({ title, button, buttonName, date }) => {
                   profession={useritem.profession}
                   buttonName="Cancel Request"
                   date={date}
+                />
+              ) : blockUser.includes(
+                  useritem.id + data.userData.userInfo.uid
+                ) ||
+                blockUser.includes(data.userData.userInfo.uid + useritem.id) ? (
+                <ListItems
+                  imgsrc={useritem.photoURL}
+                  key={index}
+                  name={useritem.username}
+                  button={button}
+                  profession={useritem.profession}
+                  buttonName="Blocked"
                 />
               ) : (
                 <ListItems

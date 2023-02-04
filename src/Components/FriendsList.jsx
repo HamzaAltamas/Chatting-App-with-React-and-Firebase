@@ -1,14 +1,22 @@
 import { Box, height } from "@mui/system";
-import { getDatabase, onValue, ref } from "firebase/database";
+import {
+  getDatabase,
+  onValue,
+  ref,
+  set,
+  push,
+  remove,
+} from "firebase/database";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { toast, ToastContainer } from "react-toastify";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
 
 const FriendsList = ({ title, button, buttonName, date }) => {
   let userData = useSelector((state) => state);
   let [friends, setFriends] = useState([]);
-
+  let db = getDatabase();
   useEffect(() => {
     let db = getDatabase();
     const friendListRef = ref(db, "friendsList");
@@ -33,21 +41,57 @@ const FriendsList = ({ title, button, buttonName, date }) => {
           blockID: blockInfo.recieverID,
           blockPhoto: blockInfo.recieverPhoto,
           blockbyName: blockInfo.senderName,
-          blockbyID: senderUid,
+          blockbyID: blockInfo.senderUid,
           blockbyPhoto: blockInfo.senderPhoto,
+        }).then(() => {
+          remove(ref(db, "friendsList/" + blockInfo.id));
+          toast.success("User Blocked", {
+            position: "bottom-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
         })
       : set(push(ref(db, "blockUser")), {
           blockName: blockInfo.senderName,
-          blockID: senderUid,
+          blockID: blockInfo.senderUid,
           blockPhoto: blockInfo.senderPhoto,
           blockbyName: blockInfo.recieverName,
           blockbyID: blockInfo.recieverID,
           blockbyPhoto: blockInfo.recieverPhoto,
+        }).then(() => {
+          remove(ref(db, "friendsList/" + blockInfo.id));
+          toast.success("User Blocked", {
+            position: "bottom-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
         });
   };
 
   return (
     <>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <Box
         sx={{
           width: { md: "49%", lg: "32%" },

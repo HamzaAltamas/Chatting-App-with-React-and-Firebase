@@ -99,11 +99,7 @@ const Home = () => {
 
           <MyGroupsList title="My Groups" button={false} />
 
-          <BlockedUsers
-            title="Blocked Users"
-            button={true}
-            buttonName="Unblock"
-          />
+          <BlockedUsers title="Blocked Users" />
         </Box>
       </Box>
     </>
