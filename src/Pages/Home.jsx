@@ -7,7 +7,7 @@ import CommonButton from "../Components/CommonButton";
 import { Box, Button, Stack } from "@mui/material";
 import { styled } from "@mui/system";
 import { Height } from "@mui/icons-material";
-import GroupList from "../Components/GroupList";
+import GroupList from "../Components/Grouplist";
 import FriendsList from "../Components/FriendsList";
 import UserList from "../Components/UserList";
 import FriendRequestList from "../Components/FriendRequestList";
