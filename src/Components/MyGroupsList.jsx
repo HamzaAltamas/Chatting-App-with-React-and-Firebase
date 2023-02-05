@@ -2,11 +2,19 @@ import { Box, height } from "@mui/system";
 import React, { useEffect } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
-import { getDatabase, ref, onValue, remove } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  remove,
+  set,
+  push,
+} from "firebase/database";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import Modal from "@mui/material/Modal";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import ListButton from "./ListButton";
 const style = {
   position: "absolute",
   top: "50%",
@@ -21,9 +29,14 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
   let userData = useSelector((state) => state);
   let [myGroupArr, setMyGroupArr] = useState([]);
   let [memberReqArr, setMemberReqArr] = useState([]);
+  let [memberModalShow, setMembermodalShow] = useState(false);
+  let [memberArr, setMemberArr] = useState([]);
   let [id, setID] = useState();
   const [open, setOpen] = useState(false);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setMembermodalShow(false);
+  };
   let db = getDatabase();
   useEffect(() => {
     let db = getDatabase();
@@ -58,6 +71,33 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
   let handleCancelMember = (id) => {
     remove(ref(db, "grouprequest/" + id));
   };
+
+  let handleMemberAccept = (item) => {
+    set(push(ref(db, "groupmembers")), {
+      groupID: item.groupID,
+      groupname: item.groupname,
+      whoJoined: item.whoJoined,
+      whoJoinedName: item.whoJoinedName,
+      whoJoinedPhoto: item.whoJoinedPhoto,
+    }).then(() => {
+      remove(ref(db, "grouprequest/" + item.id));
+    });
+  };
+  let membersListshow = (id) => {
+    setMembermodalShow(true);
+    let db = getDatabase();
+    const myGroup = ref(db, "groupmembers");
+    onValue(myGroup, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().groupID == id) {
+          arr.push({ ...items.val(), id: items.key });
+        }
+      });
+
+      setMemberArr(arr);
+    });
+  };
   return (
     <>
       <Box
@@ -90,6 +130,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                   profession={item.grouptag}
                   doubleButton={true}
                   secontBtnName="group Info"
+                  secondButtonOnclick={() => membersListshow(item.id)}
                   onClick={() => groupDetails(item.id)}
                 />
                 <Modal
@@ -126,10 +167,57 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                             secondButtonOnclick={() =>
                               handleCancelMember(item.id)
                             }
+                            onClick={() => handleMemberAccept(item)}
                           />
                         ))
                       )}
                     </ul>
+                  </Box>
+                </Modal>
+                <Modal
+                  open={memberModalShow}
+                  onClose={handleClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style} className="create-group-modal">
+                    <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
+                      Members
+                    </h2>
+                    <ul>
+                      {memberArr.length === 0 ? (
+                        <h4
+                          style={{
+                            textAlign: "center",
+                            padding: "20px",
+                            color: "#d1d1d1",
+                          }}
+                        >
+                          No Members
+                        </h4>
+                      ) : (
+                        memberArr.map((item) => (
+                          <ListItems
+                            key={item.id}
+                            imgsrc={item.whoJoinedPhoto}
+                            name={item.whoJoinedName}
+                            button={true}
+                            buttonName="Remove"
+                            onClick={() =>
+                              remove(ref(db, "groupmembers/" + item.id))
+                            }
+                          />
+                        ))
+                      )}
+                    </ul>
+                    <ListButton
+                      style={{ marginTop: "15px" }}
+                      title="Delete Group"
+                      onClick={() => {
+                        remove(ref(db, "grouplist/" + item.id));
+                        setMembermodalShow(false);
+                      }}
+                    />
                   </Box>
                 </Modal>
               </div>

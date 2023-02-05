@@ -1,7 +1,14 @@
 import React from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
-import { getDatabase, push, ref, set, onValue } from "firebase/database";
+import {
+  getDatabase,
+  push,
+  ref,
+  set,
+  onValue,
+  remove,
+} from "firebase/database";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
@@ -58,6 +65,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
   const [open, setOpen] = useState(false);
   let [errorText, setErrorText] = useState("");
   let [reqArr, setReqArr] = useState([]);
+  let [gReqID, setGreqID] = useState([]);
   let [createGroupInfo, setCreateGroupInfo] = useState({
     groupname: "",
     grouptag: "",
@@ -113,12 +121,16 @@ const GroupList = ({ title, button, buttonName, date }) => {
     const myGroup = ref(db, "grouprequest");
     onValue(myGroup, (snapshot) => {
       let arr = [];
+      let greqarr = [];
       snapshot.forEach((items) => {
+        console.log(items.val());
         if (data.userData.userInfo.uid == items.val().whoJoined) {
           arr.push(items.val().groupID);
+          greqarr.push({ ...items.val(), id: items.key });
         }
       });
       setReqArr(arr);
+      setGreqID(greqarr);
     });
   }, []);
   let handleJoinGroup = (item) => {
@@ -146,7 +158,11 @@ const GroupList = ({ title, button, buttonName, date }) => {
   let createGroup = () => {
     setOpen(true);
   };
-
+  let cancleReq = (id) => {
+    gReqID.map((item) => {
+      id === item.groupID && remove(ref(db, "grouprequest/" + item.id));
+    });
+  };
   return (
     <>
       <Box
@@ -176,8 +192,9 @@ const GroupList = ({ title, button, buttonName, date }) => {
                   key={item.id}
                   name={item.groupname}
                   button={button}
-                  buttonName="Pending"
+                  buttonName="cancel join request"
                   profession={item.grouptag}
+                  onClick={() => cancleReq(item.id)}
                 />
               ) : (
                 <ListItems
