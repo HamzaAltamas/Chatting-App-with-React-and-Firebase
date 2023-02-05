@@ -220,7 +220,7 @@ const Login = () => {
             });
             setTimeout(() => {
               nevigate("/chattingup/home");
-            }, 3000);
+            }, 0);
           }
           // Signed in
         })
