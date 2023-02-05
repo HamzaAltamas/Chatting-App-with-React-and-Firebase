@@ -2,7 +2,7 @@ import { Box, height } from "@mui/system";
 import React, { useEffect } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, remove } from "firebase/database";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import Modal from "@mui/material/Modal";
@@ -20,8 +20,11 @@ const style = {
 const MyGroupsList = ({ title, button, buttonName, date }) => {
   let userData = useSelector((state) => state);
   let [myGroupArr, setMyGroupArr] = useState([]);
+  let [memberReqArr, setMemberReqArr] = useState([]);
+  let [id, setID] = useState();
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
+  let db = getDatabase();
   useEffect(() => {
     let db = getDatabase();
     const myGroupRef = ref(db, "grouplist");
@@ -35,6 +38,26 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
       setMyGroupArr(arr);
     });
   }, []);
+
+  let groupDetails = (idd) => {
+    setOpen(true);
+    setID(idd);
+    let db = getDatabase();
+    const myGroup = ref(db, "grouprequest");
+    onValue(myGroup, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().groupID == id) {
+          arr.push({ ...items.val(), id: items.key });
+        }
+      });
+
+      setMemberReqArr(arr);
+    });
+  };
+  let handleCancelMember = (id) => {
+    remove(ref(db, "grouprequest/" + id));
+  };
   return (
     <>
       <Box
@@ -61,12 +84,13 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
             {myGroupArr.map((item) => (
               <div key={item.id}>
                 <ListItems
-                  key={item.id}
                   name={item.groupname}
                   button={true}
-                  buttonName={<BsThreeDotsVertical />}
+                  buttonName="Member Requests"
                   profession={item.grouptag}
-                  onClick={() => setOpen(true)}
+                  doubleButton={true}
+                  secontBtnName="group Info"
+                  onClick={() => groupDetails(item.id)}
                 />
                 <Modal
                   open={open}
@@ -74,7 +98,39 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                   aria-labelledby="modal-modal-title"
                   aria-describedby="modal-modal-description"
                 >
-                  <Box sx={style} className="create-group-modal"></Box>
+                  <Box sx={style} className="create-group-modal">
+                    <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
+                      Member Request
+                    </h2>
+                    <ul>
+                      {memberReqArr.length === 0 ? (
+                        <h4
+                          style={{
+                            textAlign: "center",
+                            padding: "20px",
+                            color: "#d1d1d1",
+                          }}
+                        >
+                          No Member Request
+                        </h4>
+                      ) : (
+                        memberReqArr.map((item) => (
+                          <ListItems
+                            key={item.id}
+                            imgsrc={item.whoJoinedPhoto}
+                            name={item.whoJoinedName}
+                            button={true}
+                            doubleButton={true}
+                            buttonName="Accept"
+                            secontBtnName="Reject"
+                            secondButtonOnclick={() =>
+                              handleCancelMember(item.id)
+                            }
+                          />
+                        ))
+                      )}
+                    </ul>
+                  </Box>
                 </Modal>
               </div>
             ))}
