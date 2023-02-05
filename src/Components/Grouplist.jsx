@@ -1,9 +1,127 @@
-import { Box } from "@mui/system";
 import React from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
+import { getDatabase, push, ref, set, onValue } from "firebase/database";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import { useState } from "react";
+import { Box, Button } from "@mui/material";
+import Heading from "./Heading";
+import InputBox from "./InputBox";
+import CommonButton from "./CommonButton";
+import styled from "styled-components";
+import { useSelector } from "react-redux";
+import { useEffect } from "react";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  p: 4,
+  borderRadius: "20px",
+  height: "400px",
+  overflowY: "scroll",
+};
+
+const SubmitButtonStyle = styled(Button)({
+  width: "80%",
+  fontSize: "17px",
+  padding: "19px 12px",
+  textTransform: "capitalize",
+  borderRadius: "86px",
+  marginTop: "30px",
+
+  color: "white",
+  backgroundColor: "#5F35F5",
+
+  fontFamily: '"Nunito", sans-serif',
+  "&:hover": {
+    backgroundColor: "#5f35f59e",
+    borderColor: "#0062cc",
+    boxShadow: "none",
+  },
+  "&:active": {
+    boxShadow: "none",
+    backgroundColor: "none",
+    borderColor: "none",
+  },
+  "&:focus": {
+    boxShadow: "none",
+  },
+});
 
 const GroupList = ({ title, button, buttonName, date }) => {
+  let data = useSelector((state) => state);
+  const [open, setOpen] = useState(false);
+  let [errorText, setErrorText] = useState("");
+  let [createGroupInfo, setCreateGroupInfo] = useState({
+    groupname: "",
+    grouptag: "",
+  });
+  const db = getDatabase();
+  let handleChange = (e) => {
+    let { value, name } = e.target;
+    setCreateGroupInfo((prevData) => {
+      return {
+        ...prevData,
+        [name]: value,
+      };
+    });
+    console.log(createGroupInfo);
+  };
+  let [groupArr, setGroupArr] = useState([]);
+  useEffect(() => {
+    let db = getDatabase();
+    const myGroupRef = ref(db, "grouplist");
+    onValue(myGroupRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().adminID !== data.userData.userInfo.uid) {
+          arr.push({ ...items.val(), id: items.key });
+        }
+      });
+      setGroupArr(arr);
+    });
+  }, []);
+  let handleCreateGroup = () => {
+    if (!createGroupInfo.groupname) {
+      setErrorText("Please type your group name");
+    } else if (!createGroupInfo.grouptag) {
+      setErrorText("Please type your group tag");
+    } else {
+      set(push(ref(db, "grouplist")), {
+        groupname: createGroupInfo.groupname,
+        grouptag: createGroupInfo.grouptag,
+        adminID: data.userData.userInfo.uid,
+        adminName: data.userData.userInfo.displayName,
+      }).then(() => {
+        setOpen(false);
+        setErrorText("");
+        setCreateGroupInfo({
+          groupname: "",
+          grouptag: "",
+        });
+      });
+    }
+  };
+
+  let handleJoinGroup = (item) => {
+    set(push(ref(db, "grouprequest")), {
+      groupID: createGroupInfo.groupname,
+      groupname: item.groupname,
+      whoJoined: data.userData.userInfo.uid,
+      whoJoinedName: data.userData.userInfo.displayName,
+      whoJoinedPhoto: data.userData.userInfo.photoURL,
+    }).then(() => {});
+  };
+
+  const handleClose = () => setOpen(false);
+  let createGroup = () => {
+    setOpen(true);
+  };
+
   return (
     <>
       <Box
@@ -17,7 +135,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
           overflow: "hidden",
         }}
       >
-        <ListHeader title={title} />
+        <ListHeader title={title} onClick={createGroup} headerButton={true} />
         <Box
           sx={{
             height: "80%",
@@ -27,17 +145,70 @@ const GroupList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
+            {groupArr.map((item) => (
+              <ListItems
+                key={item.id}
+                name={item.groupname}
+                button={button}
+                buttonName="Join"
+                profession={item.grouptag}
+                onClick={() => handleJoinGroup(item)}
+              />
+            ))}
           </ul>
         </Box>
       </Box>
+      {/* modal start */}
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style} className="create-group-modal">
+          <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
+            Create group
+          </h2>
+          <h6
+            style={{
+              textAlign: "center",
+              color: "red",
+            }}
+          >
+            {errorText}
+          </h6>
+          <InputBox
+            label="Group Name"
+            variant="outlined"
+            onChange={handleChange}
+            type="text"
+            name="groupname"
+            sx={{
+              width: "100%",
+              marginTop: "30px",
+            }}
+          />{" "}
+          <InputBox
+            label="Group Tag"
+            variant="outlined"
+            onChange={handleChange}
+            type="text"
+            name="grouptag"
+            sx={{
+              width: "100%",
+              marginTop: "30px",
+            }}
+            // value={}
+          />
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <CommonButton
+              title="Create Group"
+              buttonName={SubmitButtonStyle}
+              onClick={handleCreateGroup}
+            />
+          </Box>
+        </Box>
+      </Modal>
     </>
   );
 };
