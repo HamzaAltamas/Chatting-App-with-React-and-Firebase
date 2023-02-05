@@ -20,6 +20,8 @@ const style = {
 const MyGroupsList = ({ title, button, buttonName, date }) => {
   let userData = useSelector((state) => state);
   let [myGroupArr, setMyGroupArr] = useState([]);
+  let [memberReqArr, setMemberReqArr] = useState([]);
+  let [mygroupId, setMygroupId] = useState();
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
   useEffect(() => {
@@ -33,6 +35,24 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
         }
       });
       setMyGroupArr(arr);
+    });
+  }, []);
+
+  let groupDetails = (id) => {
+    setOpen(true);
+    setMygroupId(id);
+  };
+  useEffect(() => {
+    let db = getDatabase();
+    const myGroupRef = ref(db, "grouprequest");
+    onValue(myGroupRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().id == mygroupId) {
+          arr.push({ ...items.val(), id: items.key });
+        }
+      });
+      setMemberReqArr(arr);
     });
   }, []);
   return (
@@ -66,7 +86,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                   button={true}
                   buttonName={<BsThreeDotsVertical />}
                   profession={item.grouptag}
-                  onClick={() => setOpen(true)}
+                  onClick={() => groupDetails(item.id)}
                 />
                 <Modal
                   open={open}
@@ -74,7 +94,20 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                   aria-labelledby="modal-modal-title"
                   aria-describedby="modal-modal-description"
                 >
-                  <Box sx={style} className="create-group-modal"></Box>
+                  <Box sx={style} className="create-group-modal">
+                    <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
+                      Member Request
+                    </h2>
+                    <ul>
+                      {memberReqArr.map((item) => (
+                        <ListItems
+                          key={item.id}
+                          imgsrc={item.whoJoinedPhoto}
+                          name={item.whoJoinedName}
+                        />
+                      ))}
+                    </ul>
+                  </Box>
                 </Modal>
               </div>
             ))}
