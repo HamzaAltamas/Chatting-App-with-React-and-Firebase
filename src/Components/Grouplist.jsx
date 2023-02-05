@@ -12,6 +12,7 @@ import CommonButton from "./CommonButton";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 const style = {
   position: "absolute",
@@ -56,6 +57,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
   let data = useSelector((state) => state);
   const [open, setOpen] = useState(false);
   let [errorText, setErrorText] = useState("");
+  let [reqArr, setReqArr] = useState([]);
   let [createGroupInfo, setCreateGroupInfo] = useState({
     groupname: "",
     grouptag: "",
@@ -106,15 +108,38 @@ const GroupList = ({ title, button, buttonName, date }) => {
       });
     }
   };
-
+  useEffect(() => {
+    let db = getDatabase();
+    const myGroup = ref(db, "grouprequest");
+    onValue(myGroup, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (data.userData.userInfo.uid == items.val().whoJoined) {
+          arr.push(items.val().groupID);
+        }
+      });
+      setReqArr(arr);
+    });
+  }, []);
   let handleJoinGroup = (item) => {
     set(push(ref(db, "grouprequest")), {
-      groupID: createGroupInfo.groupname,
+      groupID: item.id,
       groupname: item.groupname,
       whoJoined: data.userData.userInfo.uid,
       whoJoinedName: data.userData.userInfo.displayName,
       whoJoinedPhoto: data.userData.userInfo.photoURL,
-    }).then(() => {});
+    }).then(() => {
+      toast.success("Join request sent", {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    });
   };
 
   const handleClose = () => setOpen(false);
@@ -145,16 +170,26 @@ const GroupList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            {groupArr.map((item) => (
-              <ListItems
-                key={item.id}
-                name={item.groupname}
-                button={button}
-                buttonName="Join"
-                profession={item.grouptag}
-                onClick={() => handleJoinGroup(item)}
-              />
-            ))}
+            {groupArr.map((item) =>
+              reqArr.includes(item.id) ? (
+                <ListItems
+                  key={item.id}
+                  name={item.groupname}
+                  button={button}
+                  buttonName="Pending"
+                  profession={item.grouptag}
+                />
+              ) : (
+                <ListItems
+                  key={item.id}
+                  name={item.groupname}
+                  button={button}
+                  buttonName="Join"
+                  profession={item.grouptag}
+                  onClick={() => handleJoinGroup(item)}
+                />
+              )
+            )}
           </ul>
         </Box>
       </Box>
