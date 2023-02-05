@@ -1,9 +1,40 @@
 import { Box, height } from "@mui/system";
-import React from "react";
+import React, { useEffect } from "react";
 import ListHeader from "./ListHeader";
 import ListItems from "./ListItems";
+import { getDatabase, ref, onValue } from "firebase/database";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import Modal from "@mui/material/Modal";
+import { BsThreeDotsVertical } from "react-icons/bs";
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  p: 4,
+  borderRadius: "20px",
+};
 
 const MyGroupsList = ({ title, button, buttonName, date }) => {
+  let userData = useSelector((state) => state);
+  let [myGroupArr, setMyGroupArr] = useState([]);
+  const [open, setOpen] = useState(false);
+  const handleClose = () => setOpen(false);
+  useEffect(() => {
+    let db = getDatabase();
+    const myGroupRef = ref(db, "grouplist");
+    onValue(myGroupRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        if (items.val().adminID == userData.userData.userInfo.uid) {
+          arr.push({ ...items.val(), id: items.key });
+        }
+      });
+      setMyGroupArr(arr);
+    });
+  }, []);
   return (
     <>
       <Box
@@ -27,14 +58,26 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
           }}
         >
           <ul>
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
-            <ListItems button={button} buttonName={buttonName} date={date} />
+            {myGroupArr.map((item) => (
+              <div key={item.id}>
+                <ListItems
+                  key={item.id}
+                  name={item.groupname}
+                  button={true}
+                  buttonName={<BsThreeDotsVertical />}
+                  profession={item.grouptag}
+                  onClick={() => setOpen(true)}
+                />
+                <Modal
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style} className="create-group-modal"></Box>
+                </Modal>
+              </div>
+            ))}
           </ul>
         </Box>
       </Box>

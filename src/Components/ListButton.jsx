@@ -1,9 +1,9 @@
 import React from "react";
 import { BsPlusLg } from "react-icons/bs";
 
-const ListButton = ({ title, onClick, secontBtnName }) => {
+const ListButton = ({ title, onClick, secontBtnName, style }) => {
   return (
-    <button className="listButton" onClick={onClick}>
+    <button style={style} className="listButton" onClick={onClick}>
       {title == "+" ? (
         <BsPlusLg style={{ marginTop: "5px" }} />
       ) : secontBtnName ? (
@@ -16,3 +16,4 @@ const ListButton = ({ title, onClick, secontBtnName }) => {
 };
 
 export default ListButton;
+``;

@@ -1,7 +1,9 @@
+import { List } from "@mui/material";
 import { Box } from "@mui/system";
 import React from "react";
 import { HiDotsVertical } from "react-icons/hi";
-const ListHeader = ({ title }) => {
+import ListButton from "./ListButton";
+const ListHeader = ({ title, headerButton, onClick }) => {
   return (
     <>
       <Box
@@ -17,7 +19,15 @@ const ListHeader = ({ title }) => {
         }}
       >
         <h3>{title}</h3>
-        <HiDotsVertical />
+        {headerButton ? (
+          <ListButton
+            onClick={onClick}
+            title="Create Group"
+            style={{ background: "white", color: "#5f34f5" }}
+          />
+        ) : (
+          <HiDotsVertical />
+        )}
       </Box>
     </>
   );
