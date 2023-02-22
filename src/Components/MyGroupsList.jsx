@@ -53,7 +53,6 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
   }, []);
 
   let groupDetails = (idd) => {
-    setOpen(true);
     setID(idd);
     let db = getDatabase();
     const myGroup = ref(db, "grouprequest");
@@ -66,6 +65,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
       });
 
       setMemberReqArr(arr);
+      setOpen(true);
     });
   };
   let handleCancelMember = (id) => {

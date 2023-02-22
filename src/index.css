@@ -198,3 +198,15 @@ ul {
   font-family: "Nunito", sans-serif !important;
   background-color: white;
 }
+
+/* chat area scroll bottom plugin */
+.chatArea {
+  width: 100%;
+  height: 65%;
+  background: #fff;
+  overflow-y: scroll;
+
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 10px 10px -12px inset,
+    rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+  padding: 0 !important;
+}

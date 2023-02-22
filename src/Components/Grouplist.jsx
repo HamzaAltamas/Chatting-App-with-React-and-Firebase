@@ -9,7 +9,7 @@ import {
   onValue,
   remove,
 } from "firebase/database";
-import Typography from "@mui/material/Typography";
+
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
 import { Box, Button } from "@mui/material";
@@ -116,6 +116,21 @@ const GroupList = ({ title, button, buttonName, date }) => {
       });
     }
   };
+  // read group ,member list
+  let [memberArr, setMemberArr] = useState([]);
+  useEffect(() => {
+    let db = getDatabase();
+    const myGroup = ref(db, "groupmembers");
+    onValue(myGroup, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        items.val().whoJoined == data.userData.userInfo.uid &&
+          arr.push(items.val().groupID);
+      });
+
+      setMemberArr(arr);
+    });
+  }, []);
   useEffect(() => {
     let db = getDatabase();
     const myGroup = ref(db, "grouprequest");
@@ -195,6 +210,14 @@ const GroupList = ({ title, button, buttonName, date }) => {
                   buttonName="cancel join request"
                   profession={item.grouptag}
                   onClick={() => cancleReq(item.id)}
+                />
+              ) : memberArr.includes(item.id) ? (
+                <ListItems
+                  key={item.id}
+                  name={item.groupname}
+                  button={button}
+                  buttonName="Joined"
+                  profession={item.grouptag}
                 />
               ) : (
                 <ListItems

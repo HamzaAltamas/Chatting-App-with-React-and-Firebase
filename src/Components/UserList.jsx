@@ -41,11 +41,13 @@ const UserList = ({ title, button, buttonName, date }) => {
     const userRef = ref(db, "friendRequest");
     onValue(userRef, (snapshot) => {
       let arry = [];
+      let cancelReqArr = [];
       snapshot.forEach((items) => {
         arry.push(items.val().recieverID + items.val().senderUid);
-        setFriendreqId(items.key);
+        cancelReqArr.push({ ...items.val(), id: items.key });
       });
 
+      setFriendreqId(cancelReqArr);
       setfriendreq(arry);
     });
   }, []);
@@ -55,6 +57,7 @@ const UserList = ({ title, button, buttonName, date }) => {
     const userRef = ref(db, "friendsList");
     onValue(userRef, (snapshot) => {
       let arry = [];
+
       snapshot.forEach((items) => {
         arry.push(items.val().recieverID + items.val().senderUid);
         setFriendID(items.key);
@@ -80,9 +83,14 @@ const UserList = ({ title, button, buttonName, date }) => {
   // friend req functionality end
 
   // cancel friend red data from database
-  let cancelRequest = (id) => {
-    console.log(id);
-    remove(ref(db, "friendRequest/" + id));
+  let cancelRequest = (useritem) => {
+    console.log(useritem);
+    friendreqid.map(
+      (item) =>
+        useritem.id === item.senderUid ||
+        (useritem.id === item.recieverID &&
+          remove(ref(db, "friendRequest/" + item.id)))
+    );
   };
   // cancel friend req data from database
 
@@ -144,7 +152,7 @@ const UserList = ({ title, button, buttonName, date }) => {
                 ) ||
                 friendreq.includes(data.userData.userInfo.uid + useritem.id) ? (
                 <ListItems
-                  onClick={() => cancelRequest(friendreqid)}
+                  onClick={() => cancelRequest(useritem)}
                   imgsrc={useritem.photoURL}
                   key={index}
                   name={useritem.username}
