@@ -864,7 +864,7 @@ const Message = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   value={message}
                 />
-                <Box
+                {/* <Box
                   sx={{
                     position: "fixed",
                     width: "100%",
@@ -874,12 +874,12 @@ const Message = () => {
                     zIndex: "999999",
                   }}
                 >
-                  {/* <Camera
+                  <Camera
                     onTakePhoto={(dataUri) => {
                       handleTakePhoto(dataUri);
                     }}
-                  /> */}
-                </Box>
+                  />
+                </Box> */}
                 <ListButton title={<Send />} onClick={handleSentMessage} />
                 <CameraAlt
                   onClick={handleimageSendOpen}
