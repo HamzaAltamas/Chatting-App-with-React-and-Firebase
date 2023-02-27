@@ -8,10 +8,11 @@ import {
   remove,
 } from "firebase/database";
 import ScrollToBottom from "react-scroll-to-bottom";
-
+import Camera from "react-html5-camera-photo";
+import "react-html5-camera-photo/build/css/index.css";
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -22,11 +23,25 @@ import ListItems from "../Components/ListItems";
 
 import InputBox from "../Components/InputBox";
 
-import { Delete, Send, Share } from "@mui/icons-material";
+import {
+  Camera as cam,
+  CameraAlt,
+  Delete,
+  PhotoCamera,
+  Send,
+  Share,
+} from "@mui/icons-material";
 import ListButton from "../Components/ListButton";
 import moment from "moment/moment";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import {
+  getDownloadURL,
+  getStorage,
+  ref as storageref,
+  uploadBytes,
+} from "firebase/storage";
+import zIndex from "@mui/material/styles/zIndex";
 
 const style = {
   position: "absolute",
@@ -40,6 +55,7 @@ const style = {
 
 const Message = () => {
   let data = useSelector((state) => state);
+  const storage = getStorage();
   let navigate = useNavigate();
   let [dlt, setDlt] = useState([]);
   let [message, setMessage] = useState("");
@@ -170,6 +186,30 @@ const Message = () => {
       });
     }
   };
+  let enterMessage = (e) => {
+    if (e.key === "Enter") {
+      if (friendItem.status === "singlemsg") {
+        set(push(ref(db, "singlemsg")), {
+          whosendid: userData.userData.userInfo.uid,
+          whosendname: userData.userData.userInfo.displayName,
+          whorecieveid:
+            userData.userData.userInfo.uid == friendItem.recieverID
+              ? friendItem.senderUid
+              : friendItem.recieverID,
+          whorecievename:
+            userData.userData.userInfo.uid == friendItem.recieverID
+              ? friendItem.senderName
+              : friendItem.recieverName,
+          date: `${new Date().getFullYear()}-${
+            new Date().getMonth() + 1
+          }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+          message: message,
+        }).then(() => {
+          setMessage("");
+        });
+      }
+    }
+  };
 
   // read single message data
   useEffect(() => {
@@ -209,6 +249,58 @@ const Message = () => {
   };
   // delete message
 
+  // image send modal functionality
+  const [imageSendOpen, setImageSendOpen] = useState(false);
+  let [msgImg, setMsgImg] = useState();
+  const handleimageSendOpen = () => setImageSendOpen(true);
+  const handleimageSendClose = () => setImageSendOpen(false);
+
+  let handleImageUpload = (e) => {
+    console.log(e.target.files[0]);
+    const storageRef = storageref(
+      storage,
+      `messageImages/${e.target.files[0].name}`
+    );
+
+    // 'file' comes from the Blob or File API
+    uploadBytes(storageRef, e.target.files[0]).then((snapshot) => {
+      getDownloadURL(storageRef).then((downloadURL) => {
+        console.log(downloadURL);
+
+        setMsgImg(downloadURL);
+      });
+      console.log("Uploaded a blob or file!");
+    });
+  };
+  let handleImageSend = () => {
+    if (friendItem.status === "singlemsg") {
+      set(push(ref(db, "singlemsg")), {
+        whosendid: userData.userData.userInfo.uid,
+        whosendname: userData.userData.userInfo.displayName,
+        whorecieveid:
+          userData.userData.userInfo.uid == friendItem.recieverID
+            ? friendItem.senderUid
+            : friendItem.recieverID,
+        whorecievename:
+          userData.userData.userInfo.uid == friendItem.recieverID
+            ? friendItem.senderName
+            : friendItem.recieverName,
+        date: `${new Date().getFullYear()}-${
+          new Date().getMonth() + 1
+        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+        image: msgImg,
+      }).then(() => {
+        setMessage("");
+        setMsgImg();
+        setImageSendOpen(false);
+      });
+    }
+  };
+  // captured image
+  function handleTakePhoto(dataUri) {
+    // Do stuff with the photo...
+    console.log("takePhoto");
+  }
   return (
     <>
       <Box
@@ -223,11 +315,12 @@ const Message = () => {
       <Box
         sx={{
           width: { xs: "100%", sm: "100%", md: "85%" },
-          display: "flex",
+          display: { xs: "block", sm: "block", md: "flex" },
           rowGap: "10px",
           columnGap: "15px",
           padding: "15px",
           height: "100vh",
+          marginBottom: { xs: "150px", sm: "150px", md: "0" },
         }}
       >
         <Box
@@ -380,11 +473,12 @@ const Message = () => {
           </Box>
           {/* friends list end */}
         </Box>
+        {/* messasge area */}
         <Box
           sx={{
-            width: "66%",
+            width: { xs: "100%", sm: "100%", md: "66%" },
             height: "100%",
-
+            marginBottom: { xs: "150px", sm: "150px", md: "0" },
             background: "white",
             borderRadius: "15px",
             marginTop: { xs: "20px", sm: "20px", md: "0" },
@@ -435,14 +529,169 @@ const Message = () => {
             {singleMsgArr.map(
               (item) =>
                 item.whosendid === data.userData.userInfo.uid ? (
-                  /* message who login start */
+                  item.image ? (
+                    <Box
+                      onClick={() => setDlt(item.id)}
+                      sx={{
+                        width: "100%",
+                        padding: "6px",
+                        display: "flex",
+                        justifyContent: "end",
+                      }}
+                    >
+                      <Box>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {item.whosendname}
+                        </p>
+                        <Box
+                          id="demo-positioned-button"
+                          aria-controls={
+                            menuopen ? "demo-positioned-menu" : undefined
+                          }
+                          aria-haspopup="true"
+                          aria-expanded={menuopen ? "true" : undefined}
+                          onClick={handleClick}
+                          sx={{
+                            borderRadius: "13px",
+                            background: "#5f34f5",
+                            padding: "10px",
+                            color: "#fff",
+                          }}
+                        >
+                          <img
+                            style={{ width: "250px", height: "auto" }}
+                            src={item.image}
+                          />
+                        </Box>
+                        <Menu
+                          id="demo-positioned-menu"
+                          aria-labelledby="demo-positioned-button"
+                          anchorEl={anchorEl}
+                          open={menuopen}
+                          onClose={handleoff}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                        >
+                          <MenuItem onClick={handleoff}>
+                            <Share /> Forward
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleoff();
+                              remove(ref(db, "singlemsg/" + dlt));
+                            }}
+                          >
+                            <Delete /> Delete
+                          </MenuItem>
+                        </Menu>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginTop: "5px",
+                          }}
+                        >
+                          {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                        </p>
+                      </Box>
+                    </Box>
+                  ) : (
+                    /* message who login start */
+                    <Box
+                      onClick={() => setDlt(item.id)}
+                      sx={{
+                        width: "100%",
+                        padding: "6px",
+                        display: "flex",
+                        justifyContent: "end",
+                      }}
+                    >
+                      <Box>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {item.whosendname}
+                        </p>
+                        <Box
+                          id="demo-positioned-button"
+                          aria-controls={
+                            menuopen ? "demo-positioned-menu" : undefined
+                          }
+                          aria-haspopup="true"
+                          aria-expanded={menuopen ? "true" : undefined}
+                          onClick={handleClick}
+                          sx={{
+                            borderRadius: "13px",
+                            background: "#5f34f5",
+                            padding: "10px",
+                            color: "#fff",
+                          }}
+                        >
+                          {item.message}
+                        </Box>
+                        <Menu
+                          id="demo-positioned-menu"
+                          aria-labelledby="demo-positioned-button"
+                          anchorEl={anchorEl}
+                          open={menuopen}
+                          onClose={handleoff}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                        >
+                          <MenuItem onClick={handleoff}>
+                            <Share /> Forward
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleoff();
+                              remove(ref(db, "singlemsg/" + dlt));
+                            }}
+                          >
+                            <Delete /> Delete
+                          </MenuItem>
+                        </Menu>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginTop: "5px",
+                          }}
+                        >
+                          {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                        </p>
+                      </Box>
+                    </Box>
+                  )
+                ) : item.image ? (
                   <Box
                     onClick={() => setDlt(item.id)}
                     sx={{
                       width: "100%",
                       padding: "6px",
                       display: "flex",
-                      justifyContent: "end",
+                      justifyContent: "start",
                     }}
                   >
                     <Box>
@@ -453,7 +702,7 @@ const Message = () => {
                           marginBottom: "5px",
                         }}
                       >
-                        {item.whosendname}
+                        {item.whorecievename}
                       </p>
                       <Box
                         id="demo-positioned-button"
@@ -465,12 +714,15 @@ const Message = () => {
                         onClick={handleClick}
                         sx={{
                           borderRadius: "13px",
-                          background: "#5f34f5",
+                          background: "#d1d1d1",
                           padding: "10px",
-                          color: "#fff",
+                          color: "#222",
                         }}
                       >
-                        {item.id}
+                        <img
+                          style={{ width: "250px", height: "auto" }}
+                          src={item.image}
+                        />
                       </Box>
                       <Menu
                         id="demo-positioned-menu"
@@ -545,7 +797,7 @@ const Message = () => {
                           color: "#222",
                         }}
                       >
-                        {item.id}
+                        {item.message}
                       </Box>
                       <Menu
                         id="demo-positioned-menu"
@@ -605,18 +857,78 @@ const Message = () => {
                 alignItems: "center",
               }}
             >
-              <Box sx={{ display: "flex ", gap: "10px" }}>
+              <Box sx={{ display: "flex ", gap: "10px", alignItems: "center" }}>
                 <InputBox
+                  onKeyUp={enterMessage}
                   label="Type a Message"
                   onChange={(e) => setMessage(e.target.value)}
                   value={message}
                 />
+                <Box
+                  sx={{
+                    position: "fixed",
+                    width: "100%",
+                    height: "100vh",
+                    top: "0",
+                    left: "0",
+                    zIndex: "999999",
+                  }}
+                >
+                  {/* <Camera
+                    onTakePhoto={(dataUri) => {
+                      handleTakePhoto(dataUri);
+                    }}
+                  /> */}
+                </Box>
                 <ListButton title={<Send />} onClick={handleSentMessage} />
+                <CameraAlt
+                  onClick={handleimageSendOpen}
+                  sx={{ color: "#5f34f5" }}
+                />
               </Box>
             </Box>
           </Box>
         </Box>
       </Box>
+      {/* image open modal */}
+      <Modal
+        open={imageSendOpen}
+        onClose={handleimageSendClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style} style={{ background: "#fff" }}>
+          <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
+            Send Image
+          </h2>
+          <Box>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <img style={{ width: "200px", height: "auto" }} src={msgImg} />
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <IconButton
+                color="primary"
+                aria-label="upload picture"
+                component="label"
+              >
+                <input
+                  hidden
+                  // accept="image/*"
+                  type="file"
+                  onChange={handleImageUpload}
+                />
+                <PhotoCamera />
+              </IconButton>
+
+              {msgImg && (
+                <Button onClick={handleImageSend} variant="contained">
+                  Send
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
     </>
   );
 };

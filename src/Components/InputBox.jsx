@@ -25,6 +25,7 @@ const InputBox = (props) => {
   return (
     <>
       <CommonInputCSS
+        onKeyUp={props.onKeyUp}
         onChange={props.onChange}
         label={props.label}
         variant={props.variant}
