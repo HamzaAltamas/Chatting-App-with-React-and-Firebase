@@ -26,7 +26,10 @@ import InputBox from "../Components/InputBox";
 import {
   Camera as cam,
   CameraAlt,
+  CameraAltRounded,
+  CameraAltSharp,
   Delete,
+  ExitToApp,
   PhotoCamera,
   Send,
   Share,
@@ -40,6 +43,7 @@ import {
   getStorage,
   ref as storageref,
   uploadBytes,
+  uploadString,
 } from "firebase/storage";
 import zIndex from "@mui/material/styles/zIndex";
 
@@ -59,6 +63,7 @@ const Message = () => {
   let navigate = useNavigate();
   let [dlt, setDlt] = useState([]);
   let [message, setMessage] = useState("");
+  let [openCamera, setOpenCamera] = useState(false);
   let [singleMsgArr, setSingleMsgArr] = useState([]);
   let [textID, setTextId] = useState("");
   let [friendItem, setFriendItem] = useState({
@@ -299,7 +304,22 @@ const Message = () => {
   // captured image
   function handleTakePhoto(dataUri) {
     // Do stuff with the photo...
-    console.log("takePhoto");
+    console.log(dataUri);
+    const captureImg = dataUri;
+    let storageRef = storageref(storage, `messageImages/${Math.random()}`);
+    uploadString(storageRef, captureImg, "data_url")
+      .then((snapshot) => {
+        getDownloadURL(storageRef).then((downloadURL) => {
+          console.log(downloadURL);
+
+          setMsgImg(downloadURL);
+          setOpenCamera(false);
+        });
+        console.log("Uploaded a data_url string!");
+      })
+      .then(() => {
+        setOpenCamera(false);
+      });
   }
   return (
     <>
@@ -864,22 +884,35 @@ const Message = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   value={message}
                 />
-                {/* <Box
-                  sx={{
-                    position: "fixed",
-                    width: "100%",
-                    height: "100vh",
-                    top: "0",
-                    left: "0",
-                    zIndex: "999999",
-                  }}
-                >
-                  <Camera
-                    onTakePhoto={(dataUri) => {
-                      handleTakePhoto(dataUri);
+                {openCamera && (
+                  <Box
+                    sx={{
+                      position: "fixed",
+                      width: "100%",
+                      height: "100vh",
+                      top: "0",
+                      left: "0",
+                      zIndex: "999999",
                     }}
-                  />
-                </Box> */}
+                  >
+                    <ExitToApp
+                      sx={{
+                        position: "absolute",
+                        zIndex: "9999999",
+                        top: "50px",
+                        left: "50px",
+                      }}
+                      onClick={() => setOpenCamera(false)}
+                    />{" "}
+                    <Camera
+                      idealResolution={{ width: "100%" }}
+                      isFullscreen={true}
+                      onTakePhoto={(dataUri) => {
+                        handleTakePhoto(dataUri);
+                      }}
+                    />
+                  </Box>
+                )}
                 <ListButton title={<Send />} onClick={handleSentMessage} />
                 <CameraAlt
                   onClick={handleimageSendOpen}
@@ -905,7 +938,13 @@ const Message = () => {
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <img style={{ width: "200px", height: "auto" }} src={msgImg} />
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <IconButton
                 color="primary"
                 aria-label="upload picture"
@@ -920,6 +959,9 @@ const Message = () => {
                 <PhotoCamera />
               </IconButton>
 
+              <Button onClick={() => setOpenCamera(true)} variant="contained">
+                Open Camera
+              </Button>
               {msgImg && (
                 <Button onClick={handleImageSend} variant="contained">
                   Send
