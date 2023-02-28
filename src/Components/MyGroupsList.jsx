@@ -32,9 +32,11 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
   let [memberModalShow, setMembermodalShow] = useState(false);
   let [memberArr, setMemberArr] = useState([]);
   let [id, setID] = useState();
-  const [open, setOpen] = useState(false);
+  const [openMemberList, setOpenMemberList] = useState(false);
   const handleClose = () => {
-    setOpen(false);
+    setOpenMemberList(false);
+  };
+  const handleClosee = () => {
     setMembermodalShow(false);
   };
   let db = getDatabase();
@@ -51,23 +53,46 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
       setMyGroupArr(arr);
     });
   }, []);
-
-  let groupDetails = (idd) => {
+  //  member req details
+  async function memberReqData(idd) {
     setID(idd);
     let db = getDatabase();
     const myGroup = ref(db, "grouprequest");
-    onValue(myGroup, (snapshot) => {
-      let arr = [];
-      snapshot.forEach((items) => {
-        if (items.val().groupID == id) {
-          arr.push({ ...items.val(), id: items.key });
-        }
-      });
+    let dataLoaded = false;
 
-      setMemberReqArr(arr);
-      setOpen(true);
+    await new Promise((resolve, reject) => {
+      onValue(
+        myGroup,
+        (snapshot) => {
+          let arr = [];
+          snapshot.forEach((items) => {
+            if (items.val().groupID == idd) {
+              arr.push({ ...items.val(), id: items.key });
+            }
+          });
+          setMemberReqArr(arr);
+          dataLoaded = true;
+          resolve(); // Resolve the Promise when the data has been loaded
+        },
+        (error) => {
+          reject(error); // Reject the Promise if an error occurs
+        }
+      );
     });
+
+    return dataLoaded; // Return true to indicate that the data has been loaded
+  }
+
+  let groupDetails = (idd) => {
+    memberReqData(idd)
+      .then(() => {
+        setOpenMemberList(true);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
+
   let handleCancelMember = (id) => {
     remove(ref(db, "grouprequest/" + id));
   };
@@ -96,6 +121,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
       });
 
       setMemberArr(arr);
+      setMembermodalShow(true);
     });
   };
   return (
@@ -134,7 +160,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                   onClick={() => groupDetails(item.id)}
                 />
                 <Modal
-                  open={open}
+                  open={openMemberList}
                   onClose={handleClose}
                   aria-labelledby="modal-modal-title"
                   aria-describedby="modal-modal-description"
@@ -176,7 +202,7 @@ const MyGroupsList = ({ title, button, buttonName, date }) => {
                 </Modal>
                 <Modal
                   open={memberModalShow}
-                  onClose={handleClose}
+                  onClose={handleClosee}
                   aria-labelledby="modal-modal-title"
                   aria-describedby="modal-modal-description"
                 >
