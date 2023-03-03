@@ -63,7 +63,7 @@ const Login = () => {
       nevigate("/chattingup/home");
     }
   }, []);
-   useEffect(() => {
+  useEffect(() => {
     if (!data.userData.userInfo) {
       nevigate("/login");
     }
@@ -77,7 +77,6 @@ const Login = () => {
         email: userCredential.user.email,
         photoURL: userCredential.user.photoURL,
       }).then(() => {
-      
         disp(activeUser(userCredential));
 
         setLoader(true);
@@ -330,7 +329,7 @@ const Login = () => {
                   <Image
                     width="100%"
                     imageStyle={logoStyle}
-                    src="../src/assets/images/logo.png"
+                    src="https://i.postimg.cc/SKdyhWVg/logo.png"
                   />
                 </Box>
                 <Heading
@@ -352,14 +351,14 @@ const Login = () => {
                     <Image
                       onClick={gmailClick}
                       imageStyle={googleLoginBtn}
-                      src="../src/assets/images/googlebtn.png"
+                      src="https://i.postimg.cc/t4DfR2Qn/googlebtn.png"
                     />
                   </Link>
                   <Link>
                     <Image
                       onClick={fbLoginClick}
                       imageStyle={fbLoginBtn}
-                      src="../src/assets/images/fblogin.png"
+                      src="https://i.postimg.cc/dtySdJMF/fblogin.png"
                     />
                   </Link>
                 </Box>
@@ -470,7 +469,7 @@ const Login = () => {
             <Box sx={{ width: "100%", height: "100vh" }}>
               <Image
                 imageStyle={ImageStyle}
-                src="../src/assets/images/login.png"
+                src="https://i.postimg.cc/2y8LYk4Z/login.png"
               />
             </Box>
           </Grid>

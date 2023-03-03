@@ -303,6 +303,9 @@ const Message = () => {
         setMsgImg();
         setImageSendOpen(false);
         setEmojiShow(false);
+        update(ref(db, "friendsList/" + friendItem.id), {
+          lastTxt: msgImg && "A photo Shared",
+        });
       });
     }
   };
@@ -327,9 +330,14 @@ const Message = () => {
       });
   }
   // audio recording frunctionality
+  let [audio, setAudio] = useState();
   const recorderControls = useAudioRecorder();
   const addAudioElement = (blob) => {
     const url = URL.createObjectURL(blob);
+    update(ref(db, "friendsList/" + friendItem.id), {
+      lastTxt: url && "An audio shared",
+    });
+    setAudio(url);
     // const audio = document.createElement("audio");
     // audio.src = url;
     // audio.controls = true;
@@ -359,6 +367,13 @@ const Message = () => {
   let handleEmoji = (e) => {
     setMessage(message + e.emoji);
   };
+  // last message showing in friendslist
+  let lastMessage = () => {
+    update(ref(db, "friendsList/" + friendItem.id), {
+      lastTxt: message,
+    });
+  };
+
   return (
     <>
       <Box
@@ -469,7 +484,7 @@ const Message = () => {
                         buttonName="Text"
                         name={item.recieverName}
                         imgsrc={item.recieverPhoto}
-                        profession="fhbgfjk"
+                        profession={item.lastTxt}
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
                         }
@@ -482,7 +497,7 @@ const Message = () => {
                         buttonName="Text"
                         name={item.senderName}
                         imgsrc={item.senderPhoto}
-                        profession="fhbgfjk"
+                        profession={item.lastTxt}
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
                         }
@@ -1168,7 +1183,13 @@ const Message = () => {
                     onRecordingComplete={(blob) => addAudioElement(blob)}
                     recorderControls={recorderControls}
                   />
-                  <ListButton title={<Send />} onClick={handleSentMessage} />
+                  <ListButton
+                    title={<Send />}
+                    onClick={() => {
+                      handleSentMessage();
+                      lastMessage();
+                    }}
+                  />
                 </Box>
               </Box>
             </Box>

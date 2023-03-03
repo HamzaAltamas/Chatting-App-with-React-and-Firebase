@@ -181,7 +181,7 @@ const ForgotPassword = () => {
                 <Image
                   width="100%"
                   imageStyle={logoStyle}
-                  src="../src/assets/images/logo.png"
+                  src="https://i.postimg.cc/SKdyhWVg/logo.png"
                 />
               </Box>
               <Heading

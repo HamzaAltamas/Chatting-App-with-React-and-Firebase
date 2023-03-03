@@ -56,7 +56,14 @@ const ListItems = ({
           }}
         >
           <h4>{name}</h4>
-          <p style={{ color: "#8c8c8c", fontSize: "12px" }}>
+          <p
+            style={{
+              color: "#8c8c8c",
+              fontSize: "12px",
+              width: "100px",
+              overflow: "hidden",
+            }}
+          >
             {date ? date : profession}
           </p>
         </Box>

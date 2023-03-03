@@ -128,7 +128,8 @@ const FriendsList = ({ title, button, buttonName, date }) => {
                 userData.userData.userInfo.uid == item.senderUid ? (
                   <ListItems
                     key={item.id}
-                    date={item.date}
+                    profession={item.lastTxt}
+                    // date={item.date}
                     button={true}
                     buttonName="Block"
                     name={item.recieverName}
@@ -138,7 +139,8 @@ const FriendsList = ({ title, button, buttonName, date }) => {
                 ) : (
                   <ListItems
                     key={item.id}
-                    date={item.date}
+                    // date={item.date}
+                    profession={item.lastTxt}
                     button={true}
                     buttonName="Block"
                     name={item.senderName}

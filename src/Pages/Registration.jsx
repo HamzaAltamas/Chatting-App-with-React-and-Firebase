@@ -402,7 +402,7 @@ const Registration = () => {
                   <Image
                     width="100%"
                     imageStyle={logoStyle}
-                    src="../src/assets/images/logo.png"
+                    src="https://i.postimg.cc/SKdyhWVg/logo.png"
                   />
                 </Box>
                 <Heading
@@ -590,7 +590,7 @@ const Registration = () => {
             <Box sx={{ width: "100%", height: "100vh" }}>
               <Image
                 imageStyle={ImageStyle}
-                src="../src/assets/images/registrationimage.png"
+                src="https://i.postimg.cc/T1GFYSwm/registrationimage.png"
               />
             </Box>
           </Grid>
