@@ -6,6 +6,7 @@ import {
   set,
   onValue,
   remove,
+  update,
 } from "firebase/database";
 import ScrollToBottom from "react-scroll-to-bottom";
 import Camera from "react-html5-camera-photo";
@@ -16,11 +17,11 @@ import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
-
+import EmojiPicker from "emoji-picker-react";
 import { useNavigate } from "react-router-dom";
 import ListHeader from "../Components/ListHeader";
 import ListItems from "../Components/ListItems";
-
+import { AudioRecorder, useAudioRecorder } from "react-audio-voice-recorder";
 import InputBox from "../Components/InputBox";
 
 import {
@@ -29,6 +30,7 @@ import {
   CameraAltRounded,
   CameraAltSharp,
   Delete,
+  EmojiEmotions,
   ExitToApp,
   PhotoCamera,
   Send,
@@ -65,7 +67,8 @@ const Message = () => {
   let [message, setMessage] = useState("");
   let [openCamera, setOpenCamera] = useState(false);
   let [singleMsgArr, setSingleMsgArr] = useState([]);
-  let [textID, setTextId] = useState("");
+  let [emojiShow, setEmojiShow] = useState(false);
+  // let [textID, setTextId] = useState("");
   let [friendItem, setFriendItem] = useState({
     date: "17/2/2023",
     id: "-NORCsUPbPtChRjLYALF",
@@ -74,9 +77,7 @@ const Message = () => {
     recieverPhoto:
       "https://lh3.googleusercontent.com/a/AEdFTp4B_0clDzIbpQq-TcImqIk9LYOYORhQjSwQIJ2v=s96-c",
     senderName: "Hamza Altamas",
-    senderPhoto:
-      "https://firebasestorage.googleapis.com/v0/b/mitro-social-media.appspot.com/o/mitroDP%2FC8pyEWx232gBBsZNIng5lVmcocb2?alt=media&token=e9b0c698-ad59-437d-bf45-ec7f931855a9",
-    senderUid: "C8pyEWx232gBBsZNIng5lVmcocb2",
+    senderPhoto: "no-user",
   });
   useEffect(() => {
     if (!data.userData.userInfo) {
@@ -188,6 +189,7 @@ const Message = () => {
         message: message,
       }).then(() => {
         setMessage("");
+        setEmojiShow(false);
       });
     }
   };
@@ -211,6 +213,7 @@ const Message = () => {
           message: message,
         }).then(() => {
           setMessage("");
+          setEmojiShow(false);
         });
       }
     }
@@ -278,6 +281,7 @@ const Message = () => {
     });
   };
   let handleImageSend = () => {
+    setEmojiShow(false);
     if (friendItem.status === "singlemsg") {
       set(push(ref(db, "singlemsg")), {
         whosendid: userData.userData.userInfo.uid,
@@ -298,6 +302,7 @@ const Message = () => {
         setMessage("");
         setMsgImg();
         setImageSendOpen(false);
+        setEmojiShow(false);
       });
     }
   };
@@ -321,6 +326,39 @@ const Message = () => {
         setOpenCamera(false);
       });
   }
+  // audio recording frunctionality
+  const recorderControls = useAudioRecorder();
+  const addAudioElement = (blob) => {
+    const url = URL.createObjectURL(blob);
+    // const audio = document.createElement("audio");
+    // audio.src = url;
+    // audio.controls = true;
+    // document.body.appendChild(audio);
+    if (friendItem.status === "singlemsg") {
+      set(push(ref(db, "singlemsg")), {
+        whosendid: userData.userData.userInfo.uid,
+        whosendname: userData.userData.userInfo.displayName,
+        whorecieveid:
+          userData.userData.userInfo.uid == friendItem.recieverID
+            ? friendItem.senderUid
+            : friendItem.recieverID,
+        whorecievename:
+          userData.userData.userInfo.uid == friendItem.recieverID
+            ? friendItem.senderName
+            : friendItem.recieverName,
+        date: `${new Date().getFullYear()}-${
+          new Date().getMonth() + 1
+        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+        audio: url,
+      }).then(() => {
+        setMessage("");
+      });
+    }
+  };
+  // emoji functionality
+  let handleEmoji = (e) => {
+    setMessage(message + e.emoji);
+  };
   return (
     <>
       <Box
@@ -426,11 +464,12 @@ const Message = () => {
                     userData.userData.userInfo.uid == item.senderUid ? (
                       <ListItems
                         key={index}
-                        date={item.date}
+                        // date={item.date}
                         button={true}
                         buttonName="Text"
                         name={item.recieverName}
                         imgsrc={item.recieverPhoto}
+                        profession="fhbgfjk"
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
                         }
@@ -438,11 +477,12 @@ const Message = () => {
                     ) : (
                       <ListItems
                         key={index}
-                        date={item.date}
+                        // date={item.date}
                         button={true}
                         buttonName="Text"
                         name={item.senderName}
                         imgsrc={item.senderPhoto}
+                        profession="fhbgfjk"
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
                         }
@@ -494,69 +534,315 @@ const Message = () => {
           {/* friends list end */}
         </Box>
         {/* messasge area */}
-        <Box
-          sx={{
-            width: { xs: "100%", sm: "100%", md: "66%" },
-            height: "100%",
-            marginBottom: { xs: "150px", sm: "150px", md: "0" },
-            background: "white",
-            borderRadius: "15px",
-            marginTop: { xs: "20px", sm: "20px", md: "0" },
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          }}
-        >
+        {friendItem.senderPhoto !== "no-user" ? (
           <Box
             sx={{
-              width: "100%",
-              height: "15%",
-
-              padding: "0 0 0 20px",
+              width: { xs: "100%", sm: "100%", md: "66%" },
+              height: "100%",
+              marginBottom: { xs: "150px", sm: "150px", md: "0" },
+              background: "white",
+              borderRadius: "15px",
+              marginTop: { xs: "20px", sm: "20px", md: "0" },
               boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
-              display: "flex",
-              alignItems: "center",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Avatar
-                sx={{ height: "60px", width: "60px" }}
-                src={
-                  friendItem.senderUid === data.userData.userInfo.uid
-                    ? friendItem.recieverPhoto
-                    : friendItem.senderPhoto
-                }
-              />
-              <Box sx={{ padding: "0 0 0 20px" }}>
-                <h3>
-                  {friendItem.senderUid === data.userData.userInfo.uid
-                    ? friendItem.recieverName
-                    : friendItem.senderName}
-                </h3>
-                <h6 style={{ color: "#d1d1d1" }}>Online</h6>
+            <Box
+              sx={{
+                width: "100%",
+                height: "15%",
+
+                padding: "0 0 0 20px",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                borderRadius: "15px 15px 0 0",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{ height: "60px", width: "60px" }}
+                  src={
+                    friendItem.senderUid === data.userData.userInfo.uid
+                      ? friendItem.recieverPhoto
+                      : friendItem.senderPhoto
+                  }
+                />
+                <Box sx={{ padding: "0 0 0 20px" }}>
+                  <h3>
+                    {friendItem.senderUid === data.userData.userInfo.uid
+                      ? friendItem.recieverName
+                      : friendItem.senderName}
+                  </h3>
+                  <h6 style={{ color: "#d1d1d1" }}>Online</h6>
+                </Box>
               </Box>
             </Box>
-          </Box>
-          <ScrollToBottom
-            // sx={{
-            //   width: "100%",
-            //   height: "65%",
-            //   background: "#fff",
-            //   overflowY: "scroll",
-            //   padding: "10px",
-            // }}
-            className="chatArea"
-          >
-            {singleMsgArr.map(
-              (item) =>
-                item.whosendid === data.userData.userInfo.uid ? (
-                  item.image ? (
+            <ScrollToBottom
+              // sx={{
+              //   width: "100%",
+              //   height: "65%",
+              //   background: "#fff",
+              //   overflowY: "scroll",
+              //   padding: "10px",
+              // }}
+              className="chatArea"
+            >
+              {singleMsgArr.map(
+                (item) =>
+                  item.whosendid === data.userData.userInfo.uid ? (
+                    item.image ? (
+                      <Box
+                        onClick={() => setDlt(item.id)}
+                        sx={{
+                          width: "100%",
+                          padding: "6px",
+                          display: "flex",
+                          justifyContent: "end",
+                        }}
+                      >
+                        <Box>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {item.whosendname}
+                          </p>
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#5f34f5",
+                              padding: "10px",
+                              color: "#fff",
+                            }}
+                          >
+                            {!item.image ? (
+                              <p>Your message Removed</p>
+                            ) : (
+                              <img
+                                style={{ width: "250px", height: "auto" }}
+                                src={item.image}
+                              />
+                            )}
+                          </Box>
+                          <Menu
+                            id="demo-positioned-menu"
+                            aria-labelledby="demo-positioned-button"
+                            anchorEl={anchorEl}
+                            open={menuopen}
+                            onClose={handleoff}
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "left",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                          >
+                            <MenuItem onClick={handleoff}>
+                              <Share /> Forward
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => {
+                                handleoff();
+                                update(ref(db, "singlemsg/" + dlt), {
+                                  image: "",
+                                });
+                                navigate("/chattingup/message");
+                              }}
+                            >
+                              <Delete /> Delete
+                            </MenuItem>
+                          </Menu>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginTop: "5px",
+                            }}
+                          >
+                            {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                          </p>
+                        </Box>
+                      </Box>
+                    ) : item.audio ? (
+                      <Box
+                        onClick={() => setDlt(item.id)}
+                        sx={{
+                          width: "100%",
+                          padding: "6px",
+                          display: "flex",
+                          justifyContent: "end",
+                        }}
+                      >
+                        <Box>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {item.whosendname}
+                          </p>
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#5f34f5",
+                              padding: "10px",
+                              color: "#fff",
+                            }}
+                          >
+                            {item.audio === "" ? (
+                              "Your message Removed"
+                            ) : (
+                              <audio src={item.audio} controls></audio>
+                            )}
+                          </Box>
+                          <Menu
+                            id="demo-positioned-menu"
+                            aria-labelledby="demo-positioned-button"
+                            anchorEl={anchorEl}
+                            open={menuopen}
+                            onClose={handleoff}
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "left",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                          >
+                            <MenuItem onClick={handleoff}>
+                              <Share /> Forward
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => {
+                                handleoff();
+                                update(ref(db, "singlemsg/" + dlt), {
+                                  audio: "Your message Removed",
+                                });
+                              }}
+                            >
+                              <Delete /> Delete
+                            </MenuItem>
+                          </Menu>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginTop: "5px",
+                            }}
+                          >
+                            {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                          </p>
+                        </Box>
+                      </Box>
+                    ) : (
+                      /* message who login start */
+                      <Box
+                        onClick={() => setDlt(item.id)}
+                        sx={{
+                          width: "100%",
+                          padding: "6px",
+                          display: "flex",
+                          justifyContent: "end",
+                        }}
+                      >
+                        <Box>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {item.whosendname}
+                          </p>
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#5f34f5",
+                              padding: "10px",
+                              color: "#fff",
+                            }}
+                          >
+                            {item.message}
+                          </Box>
+                          <Menu
+                            id="demo-positioned-menu"
+                            aria-labelledby="demo-positioned-button"
+                            anchorEl={anchorEl}
+                            open={menuopen}
+                            onClose={handleoff}
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "left",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                          >
+                            <MenuItem onClick={handleoff}>
+                              <Share /> Forward
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => {
+                                handleoff();
+                                update(ref(db, "singlemsg/" + dlt), {
+                                  message: "Your message Removed",
+                                });
+                              }}
+                            >
+                              <Delete /> Delete
+                            </MenuItem>
+                          </Menu>
+                          <p
+                            style={{
+                              color: "#d1d1d1",
+                              fontSize: "13px",
+                              marginTop: "5px",
+                            }}
+                          >
+                            {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                          </p>
+                        </Box>
+                      </Box>
+                    )
+                  ) : item.image ? (
                     <Box
                       onClick={() => setDlt(item.id)}
                       sx={{
                         width: "100%",
                         padding: "6px",
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: "start",
                       }}
                     >
                       <Box>
@@ -567,7 +853,7 @@ const Message = () => {
                             marginBottom: "5px",
                           }}
                         >
-                          {item.whosendname}
+                          {item.whorecievename}
                         </p>
                         <Box
                           id="demo-positioned-button"
@@ -579,15 +865,19 @@ const Message = () => {
                           onClick={handleClick}
                           sx={{
                             borderRadius: "13px",
-                            background: "#5f34f5",
+                            background: "#d1d1d1",
                             padding: "10px",
-                            color: "#fff",
+                            color: "#222",
                           }}
                         >
-                          <img
-                            style={{ width: "250px", height: "auto" }}
-                            src={item.image}
-                          />
+                          {item.image.includes === "Your message Removed" ? (
+                            item.image
+                          ) : (
+                            <img
+                              style={{ width: "250px", height: "auto" }}
+                              src={item.image}
+                            />
+                          )}
                         </Box>
                         <Menu
                           id="demo-positioned-menu"
@@ -610,7 +900,90 @@ const Message = () => {
                           <MenuItem
                             onClick={() => {
                               handleoff();
-                              remove(ref(db, "singlemsg/" + dlt));
+                              update(ref(db, "singlemsg/" + dlt), {
+                                image: "Your message Removed",
+                              });
+                            }}
+                          >
+                            <Delete /> Delete
+                          </MenuItem>
+                        </Menu>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginTop: "5px",
+                          }}
+                        >
+                          {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                        </p>
+                      </Box>
+                    </Box>
+                  ) : item.audio ? (
+                    <Box
+                      onClick={() => setDlt(item.id)}
+                      sx={{
+                        width: "100%",
+                        padding: "6px",
+                        display: "flex",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <Box>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {item.whorecievename}
+                        </p>
+                        <Box
+                          id="demo-positioned-button"
+                          aria-controls={
+                            menuopen ? "demo-positioned-menu" : undefined
+                          }
+                          aria-haspopup="true"
+                          aria-expanded={menuopen ? "true" : undefined}
+                          onClick={handleClick}
+                          sx={{
+                            borderRadius: "13px",
+                            background: "#d1d1d1",
+                            padding: "10px",
+                            color: "#222",
+                          }}
+                        >
+                          {item.audio === "" ? (
+                            <p>Your message Removed</p>
+                          ) : (
+                            <audio src={item.audio} controls></audio>
+                          )}
+                        </Box>
+                        <Menu
+                          id="demo-positioned-menu"
+                          aria-labelledby="demo-positioned-button"
+                          anchorEl={anchorEl}
+                          open={menuopen}
+                          onClose={handleoff}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                        >
+                          <MenuItem onClick={handleoff}>
+                            <Share /> Forward
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleoff();
+                              update(ref(db, "singlemsg/" + dlt), {
+                                audio: "Your message Removed",
+                              });
                             }}
                           >
                             <Delete /> Delete
@@ -628,14 +1001,13 @@ const Message = () => {
                       </Box>
                     </Box>
                   ) : (
-                    /* message who login start */
                     <Box
                       onClick={() => setDlt(item.id)}
                       sx={{
                         width: "100%",
                         padding: "6px",
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: "start",
                       }}
                     >
                       <Box>
@@ -646,7 +1018,7 @@ const Message = () => {
                             marginBottom: "5px",
                           }}
                         >
-                          {item.whosendname}
+                          {item.whorecievename}
                         </p>
                         <Box
                           id="demo-positioned-button"
@@ -658,9 +1030,9 @@ const Message = () => {
                           onClick={handleClick}
                           sx={{
                             borderRadius: "13px",
-                            background: "#5f34f5",
+                            background: "#d1d1d1",
                             padding: "10px",
-                            color: "#fff",
+                            color: "#222",
                           }}
                         >
                           {item.message}
@@ -686,7 +1058,9 @@ const Message = () => {
                           <MenuItem
                             onClick={() => {
                               handleoff();
-                              remove(ref(db, "singlemsg/" + dlt));
+                              update(ref(db, "singlemsg/" + dlt), {
+                                message: "Your message Removed",
+                              });
                             }}
                           >
                             <Delete /> Delete
@@ -704,224 +1078,112 @@ const Message = () => {
                       </Box>
                     </Box>
                   )
-                ) : item.image ? (
-                  <Box
-                    onClick={() => setDlt(item.id)}
-                    sx={{
-                      width: "100%",
-                      padding: "6px",
-                      display: "flex",
-                      justifyContent: "start",
-                    }}
-                  >
-                    <Box>
-                      <p
-                        style={{
-                          color: "#d1d1d1",
-                          fontSize: "13px",
-                          marginBottom: "5px",
-                        }}
-                      >
-                        {item.whorecievename}
-                      </p>
-                      <Box
-                        id="demo-positioned-button"
-                        aria-controls={
-                          menuopen ? "demo-positioned-menu" : undefined
-                        }
-                        aria-haspopup="true"
-                        aria-expanded={menuopen ? "true" : undefined}
-                        onClick={handleClick}
-                        sx={{
-                          borderRadius: "13px",
-                          background: "#d1d1d1",
-                          padding: "10px",
-                          color: "#222",
-                        }}
-                      >
-                        <img
-                          style={{ width: "250px", height: "auto" }}
-                          src={item.image}
-                        />
-                      </Box>
-                      <Menu
-                        id="demo-positioned-menu"
-                        aria-labelledby="demo-positioned-button"
-                        anchorEl={anchorEl}
-                        open={menuopen}
-                        onClose={handleoff}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "left",
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "left",
-                        }}
-                      >
-                        <MenuItem onClick={handleoff}>
-                          <Share /> Forward
-                        </MenuItem>
-                        <MenuItem
-                          onClick={() => {
-                            handleoff();
-                            remove(ref(db, "singlemsg/" + dlt));
-                          }}
-                        >
-                          <Delete /> Delete
-                        </MenuItem>
-                      </Menu>
-                      <p
-                        style={{
-                          color: "#d1d1d1",
-                          fontSize: "13px",
-                          marginTop: "5px",
-                        }}
-                      >
-                        {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
-                      </p>
-                    </Box>
-                  </Box>
-                ) : (
-                  <Box
-                    onClick={() => setDlt(item.id)}
-                    sx={{
-                      width: "100%",
-                      padding: "6px",
-                      display: "flex",
-                      justifyContent: "start",
-                    }}
-                  >
-                    <Box>
-                      <p
-                        style={{
-                          color: "#d1d1d1",
-                          fontSize: "13px",
-                          marginBottom: "5px",
-                        }}
-                      >
-                        {item.whorecievename}
-                      </p>
-                      <Box
-                        id="demo-positioned-button"
-                        aria-controls={
-                          menuopen ? "demo-positioned-menu" : undefined
-                        }
-                        aria-haspopup="true"
-                        aria-expanded={menuopen ? "true" : undefined}
-                        onClick={handleClick}
-                        sx={{
-                          borderRadius: "13px",
-                          background: "#d1d1d1",
-                          padding: "10px",
-                          color: "#222",
-                        }}
-                      >
-                        {item.message}
-                      </Box>
-                      <Menu
-                        id="demo-positioned-menu"
-                        aria-labelledby="demo-positioned-button"
-                        anchorEl={anchorEl}
-                        open={menuopen}
-                        onClose={handleoff}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "left",
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "left",
-                        }}
-                      >
-                        <MenuItem onClick={handleoff}>
-                          <Share /> Forward
-                        </MenuItem>
-                        <MenuItem
-                          onClick={() => {
-                            handleoff();
-                            remove(ref(db, "singlemsg/" + dlt));
-                          }}
-                        >
-                          <Delete /> Delete
-                        </MenuItem>
-                      </Menu>
-                      <p
-                        style={{
-                          color: "#d1d1d1",
-                          fontSize: "13px",
-                          marginTop: "5px",
-                        }}
-                      >
-                        {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
-                      </p>
-                    </Box>
-                  </Box>
-                )
-              /* message who login end */
-            )}
-          </ScrollToBottom>
-          <Box
-            sx={{
-              width: "100%",
-              height: "20%",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
-              background: "#fff",
-              display: "flex",
-            }}
-          >
+                /* message who login end */
+              )}
+            </ScrollToBottom>
             <Box
               sx={{
-                padding: "0 0 0 20px",
+                width: "100%",
+                height: "20%",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+                background: "#fff",
                 display: "flex",
-                alignItems: "center",
+                borderRadius: "0 0 15px 15px",
               }}
             >
-              <Box sx={{ display: "flex ", gap: "10px", alignItems: "center" }}>
-                <InputBox
-                  onKeyUp={enterMessage}
-                  label="Type a Message"
-                  onChange={(e) => setMessage(e.target.value)}
-                  value={message}
-                />
-                {openCamera && (
-                  <Box
-                    sx={{
-                      position: "fixed",
-                      width: "100%",
-                      height: "100vh",
-                      top: "0",
-                      left: "0",
-                      zIndex: "999999",
-                    }}
-                  >
-                    <ExitToApp
+              <Box
+                sx={{
+                  padding: "0 0 0 20px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{ display: "flex ", gap: "10px", alignItems: "center" }}
+                >
+                  <InputBox
+                    onKeyUp={enterMessage}
+                    label="Type a Message"
+                    onChange={(e) => setMessage(e.target.value)}
+                    value={message}
+                  />
+                  {openCamera && (
+                    <Box
                       sx={{
-                        position: "absolute",
-                        zIndex: "9999999",
-                        top: "50px",
-                        left: "50px",
+                        position: "fixed",
+                        width: "100%",
+                        height: "100vh",
+                        top: "0",
+                        left: "0",
+                        zIndex: "999999",
                       }}
-                      onClick={() => setOpenCamera(false)}
-                    />{" "}
-                    <Camera
-                      idealResolution={{ width: "100%" }}
-                      isFullscreen={true}
-                      onTakePhoto={(dataUri) => {
-                        handleTakePhoto(dataUri);
-                      }}
+                    >
+                      <ExitToApp
+                        sx={{
+                          position: "absolute",
+                          zIndex: "9999999",
+                          top: "50px",
+                          left: "50px",
+                        }}
+                        onClick={() => setOpenCamera(false)}
+                      />{" "}
+                      <Camera
+                        idealResolution={{ width: "100%" }}
+                        isFullscreen={true}
+                        onTakePhoto={(dataUri) => {
+                          handleTakePhoto(dataUri);
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  <CameraAlt
+                    onClick={handleimageSendOpen}
+                    sx={{
+                      color: "#5f34f5",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  />
+                  <Box sx={{ position: "relative" }}>
+                    {emojiShow && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          bottom: "30px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                        }}
+                      >
+                        <EmojiPicker onEmojiClick={(e) => handleEmoji(e)} />
+                      </Box>
+                    )}
+                    <EmojiEmotions
+                      sx={{ color: "#5f34f5", marginTop: "6px" }}
+                      onClick={() => setEmojiShow((prev) => !prev)}
                     />
                   </Box>
-                )}
-                <ListButton title={<Send />} onClick={handleSentMessage} />
-                <CameraAlt
-                  onClick={handleimageSendOpen}
-                  sx={{ color: "#5f34f5" }}
-                />
+
+                  <AudioRecorder
+                    onRecordingComplete={(blob) => addAudioElement(blob)}
+                    recorderControls={recorderControls}
+                  />
+                  <ListButton title={<Send />} onClick={handleSentMessage} />
+                </Box>
               </Box>
             </Box>
           </Box>
-        </Box>
+        ) : (
+          <h4
+            style={{
+              textAlign: "center",
+              padding: "20px",
+              color: "#d1d1d1",
+            }}
+          >
+            Choose Friend or Group to start Text
+          </h4>
+        )}
       </Box>
       {/* image open modal */}
       <Modal
