@@ -407,63 +407,63 @@ const Message = () => {
   let [audio, setAudio] = useState();
   const recorderControls = useAudioRecorder();
   const addAudioElement = (blob) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    reader.onloadend = () => {
-      const base64data = reader.result;
-      console.log("grgergr", base64data);
+    // const reader = new FileReader();
+    // reader.readAsDataURL(blob);
+    // reader.onloadend = () => {
+    //   const base64data = reader.result;
+    //   console.log("grgergr", base64data);
+    console.log(blob);
 
-      const audio = base64data;
-      let storageRef = storageref(storage, `textAudio/${Math.random()}`);
-      uploadString(storageRef, audio, "data_url").then((snapshot) => {
-        getDownloadURL(storageRef).then((downloadURL) => {
-          setAudio(downloadURL);
-          // update(ref(db, "friendsList/" + friendItem.id), {
-          //   lastTxt: audio && "An audio shared",
-          // });
-        });
-        console.log("Uploaded a data_url string!");
-      });
-    };
+    const url = URL.createObjectURL(blob);
+    const audio = document.createElement("audio");
+    audio.src = url;
+    audio.controls = true;
+    document.body.appendChild(audio);
 
-    if (friendItem.status === "singlemsg") {
-      set(push(ref(db, "singlemsg")), {
-        whosendid: userData.userData.userInfo.uid,
-        whosendname: userData.userData.userInfo.displayName,
-        whorecieveid:
-          userData.userData.userInfo.uid == friendItem.recieverID
-            ? friendItem.senderUid
-            : friendItem.recieverID,
-        whorecievename:
-          userData.userData.userInfo.uid == friendItem.recieverID
-            ? friendItem.senderName
-            : friendItem.recieverName,
-        date: `${new Date().getFullYear()}-${
-          new Date().getMonth() + 1
-        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
-        audio: audio,
-      }).then(() => {
-        setMessage("");
-      });
-    }
-    if (groupItem.status === "group-message") {
-      set(push(ref(db, "groupmsg")), {
-        whosendid: userData.userData.userInfo.uid,
-        whosendname: userData.userData.userInfo.displayName,
-        recieveGroupid: groupItem.id,
+    let storageRef = storageref(storage, `textAudio/${Math.random()}`);
+    uploadBytes(storageRef, blob).then((snapshot) => {
+      getDownloadURL(storageRef).then((downloadURL) => {
+        if (friendItem.status === "singlemsg") {
+          set(push(ref(db, "singlemsg")), {
+            whosendid: userData.userData.userInfo.uid,
+            whosendname: userData.userData.userInfo.displayName,
+            whorecieveid:
+              userData.userData.userInfo.uid == friendItem.recieverID
+                ? friendItem.senderUid
+                : friendItem.recieverID,
+            whorecievename:
+              userData.userData.userInfo.uid == friendItem.recieverID
+                ? friendItem.senderName
+                : friendItem.recieverName,
+            date: `${new Date().getFullYear()}-${
+              new Date().getMonth() + 1
+            }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+            audio: downloadURL,
+          }).then(() => {
+            setMessage("");
+          });
+        }
+        if (groupItem.status === "group-message") {
+          set(push(ref(db, "groupmsg")), {
+            whosendid: userData.userData.userInfo.uid,
+            whosendname: userData.userData.userInfo.displayName,
+            recieveGroupid: groupItem.id,
 
-        date: `${new Date().getFullYear()}-${
-          new Date().getMonth() + 1
-        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
-        audio: audio,
-      }).then(() => {
-        setMsgImg("");
-        setImageSendOpen(false);
-        setImageSendOpen(false);
-        setEmojiShow(false);
-        setOpenCamera(false);
+            date: `${new Date().getFullYear()}-${
+              new Date().getMonth() + 1
+            }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+            audio: downloadURL,
+          }).then(() => {
+            setMsgImg("");
+            setImageSendOpen(false);
+            setImageSendOpen(false);
+            setEmojiShow(false);
+            setOpenCamera(false);
+          });
+        }
       });
-    }
+      console.log("Uploaded a blob or file!");
+    });
   };
   // emoji functionality
   let handleEmoji = (e) => {
