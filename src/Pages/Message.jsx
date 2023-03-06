@@ -13,7 +13,14 @@ import Camera from "react-html5-camera-photo";
 import "react-html5-camera-photo/build/css/index.css";
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
-import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Badge,
+} from "@mui/material";
 
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -47,7 +54,8 @@ import {
   uploadBytes,
   uploadString,
 } from "firebase/storage";
-import zIndex from "@mui/material/styles/zIndex";
+
+import { styled } from "@mui/material/styles";
 
 const style = {
   position: "absolute",
@@ -68,6 +76,13 @@ const Message = () => {
   let [openCamera, setOpenCamera] = useState(false);
   let [singleMsgArr, setSingleMsgArr] = useState([]);
   let [emojiShow, setEmojiShow] = useState(false);
+  let [groupItem, setGroupItem] = useState({
+    adminID: "m6A9ckEiMOdw3m0NmKF1DnvoO2F3",
+    adminName: "Hamza Altamas",
+    groupname: "Pern",
+    grouptag: "no-group-items",
+    id: "-NOa6x5ZwWiTZx1ZGQ2I",
+  });
   // let [textID, setTextId] = useState("");
   let [friendItem, setFriendItem] = useState({
     date: "17/2/2023",
@@ -171,30 +186,7 @@ const Message = () => {
     setFriendItem(item);
   };
   let handleSentMessage = () => {
-    if (friendItem.status === "singlemsg") {
-      set(push(ref(db, "singlemsg")), {
-        whosendid: userData.userData.userInfo.uid,
-        whosendname: userData.userData.userInfo.displayName,
-        whorecieveid:
-          userData.userData.userInfo.uid == friendItem.recieverID
-            ? friendItem.senderUid
-            : friendItem.recieverID,
-        whorecievename:
-          userData.userData.userInfo.uid == friendItem.recieverID
-            ? friendItem.senderName
-            : friendItem.recieverName,
-        date: `${new Date().getFullYear()}-${
-          new Date().getMonth() + 1
-        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
-        message: message,
-      }).then(() => {
-        setMessage("");
-        setEmojiShow(false);
-      });
-    }
-  };
-  let enterMessage = (e) => {
-    if (e.key === "Enter") {
+    if (message !== "") {
       if (friendItem.status === "singlemsg") {
         set(push(ref(db, "singlemsg")), {
           whosendid: userData.userData.userInfo.uid,
@@ -217,6 +209,74 @@ const Message = () => {
         });
       }
     }
+    // group msg
+    if (groupmsg !== "") {
+      if (groupItem.status === "group-message") {
+        set(push(ref(db, "groupmsg")), {
+          whosendid: userData.userData.userInfo.uid,
+          whosendname: userData.userData.userInfo.displayName,
+          recieveGroupid: groupItem.id,
+
+          date: `${new Date().getFullYear()}-${
+            new Date().getMonth() + 1
+          }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+          groupmessage: groupmsg,
+        }).then(() => {
+          setGroupmsg("");
+          setEmojiShow(false);
+        });
+      }
+    }
+  };
+  let enterMessage = (e) => {
+    if (message !== "") {
+      if (e.key === "Enter") {
+        if (friendItem.status === "singlemsg") {
+          set(push(ref(db, "singlemsg")), {
+            whosendid: userData.userData.userInfo.uid,
+            whosendname: userData.userData.userInfo.displayName,
+            whorecieveid:
+              userData.userData.userInfo.uid == friendItem.recieverID
+                ? friendItem.senderUid
+                : friendItem.recieverID,
+            whorecievename:
+              userData.userData.userInfo.uid == friendItem.recieverID
+                ? friendItem.senderName
+                : friendItem.recieverName,
+            date: `${new Date().getFullYear()}-${
+              new Date().getMonth() + 1
+            }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+            message: message,
+          }).then(() => {
+            setMessage("");
+            setEmojiShow(false);
+            update(ref(db, "friendsList/" + friendItem.id), {
+              lastTxt: message,
+            });
+          });
+        }
+      }
+    }
+    // group msg
+    if (groupmsg !== "") {
+      if (e.key === "Enter") {
+        if (groupItem.status === "group-message") {
+          set(push(ref(db, "groupmsg")), {
+            whosendid: userData.userData.userInfo.uid,
+            whosendname: userData.userData.userInfo.displayName,
+            recieveGroupid: groupItem.id,
+
+            date: `${new Date().getFullYear()}-${
+              new Date().getMonth() + 1
+            }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+            groupmessage: groupmsg,
+          }).then(() => {
+            setGroupmsg("");
+            setEmojiShow(false);
+          });
+        }
+      }
+    }
   };
 
   // read single message data
@@ -231,7 +291,6 @@ const Message = () => {
           ? friendItem.senderUid
           : friendItem.recieverID;
       snapshot.forEach((items) => {
-        console.log(items.val());
         if (
           (items.val().whosendid === userData.userData.userInfo.uid &&
             items.val().whorecieveid === id) ||
@@ -274,12 +333,13 @@ const Message = () => {
     uploadBytes(storageRef, e.target.files[0]).then((snapshot) => {
       getDownloadURL(storageRef).then((downloadURL) => {
         console.log(downloadURL);
-
+        setOpenCamera(false);
         setMsgImg(downloadURL);
       });
       console.log("Uploaded a blob or file!");
     });
   };
+  // image sent
   let handleImageSend = () => {
     setEmojiShow(false);
     if (friendItem.status === "singlemsg") {
@@ -308,6 +368,25 @@ const Message = () => {
         });
       });
     }
+    // group Img
+    if (groupItem.status === "group-message") {
+      set(push(ref(db, "groupmsg")), {
+        whosendid: userData.userData.userInfo.uid,
+        whosendname: userData.userData.userInfo.displayName,
+        recieveGroupid: groupItem.id,
+
+        date: `${new Date().getFullYear()}-${
+          new Date().getMonth() + 1
+        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+        groupImg: msgImg,
+      }).then(() => {
+        setMsgImg("");
+        setImageSendOpen(false);
+        setImageSendOpen(false);
+        setEmojiShow(false);
+        setOpenCamera(false);
+      });
+    }
   };
   // captured image
   function handleTakePhoto(dataUri) {
@@ -315,33 +394,38 @@ const Message = () => {
     console.log(dataUri);
     const captureImg = dataUri;
     let storageRef = storageref(storage, `messageImages/${Math.random()}`);
-    uploadString(storageRef, captureImg, "data_url")
-      .then((snapshot) => {
-        getDownloadURL(storageRef).then((downloadURL) => {
-          console.log(downloadURL);
-
-          setMsgImg(downloadURL);
-          setOpenCamera(false);
-        });
-        console.log("Uploaded a data_url string!");
-      })
-      .then(() => {
+    uploadString(storageRef, captureImg, "data_url").then((snapshot) => {
+      getDownloadURL(storageRef).then((downloadURL) => {
+        console.log(downloadURL);
+        setMsgImg(downloadURL);
         setOpenCamera(false);
       });
+      console.log("Uploaded a data_url string!");
+    });
   }
   // audio recording frunctionality
   let [audio, setAudio] = useState();
   const recorderControls = useAudioRecorder();
   const addAudioElement = (blob) => {
-    const url = URL.createObjectURL(blob);
-    update(ref(db, "friendsList/" + friendItem.id), {
-      lastTxt: url && "An audio shared",
-    });
-    setAudio(url);
-    // const audio = document.createElement("audio");
-    // audio.src = url;
-    // audio.controls = true;
-    // document.body.appendChild(audio);
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      const base64data = reader.result;
+      console.log("grgergr", base64data);
+
+      const audio = base64data;
+      let storageRef = storageref(storage, `textAudio/${Math.random()}`);
+      uploadString(storageRef, audio, "data_url").then((snapshot) => {
+        getDownloadURL(storageRef).then((downloadURL) => {
+          setAudio(downloadURL);
+          // update(ref(db, "friendsList/" + friendItem.id), {
+          //   lastTxt: audio && "An audio shared",
+          // });
+        });
+        console.log("Uploaded a data_url string!");
+      });
+    };
+
     if (friendItem.status === "singlemsg") {
       set(push(ref(db, "singlemsg")), {
         whosendid: userData.userData.userInfo.uid,
@@ -357,15 +441,34 @@ const Message = () => {
         date: `${new Date().getFullYear()}-${
           new Date().getMonth() + 1
         }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
-        audio: url,
+        audio: audio,
       }).then(() => {
         setMessage("");
+      });
+    }
+    if (groupItem.status === "group-message") {
+      set(push(ref(db, "groupmsg")), {
+        whosendid: userData.userData.userInfo.uid,
+        whosendname: userData.userData.userInfo.displayName,
+        recieveGroupid: groupItem.id,
+
+        date: `${new Date().getFullYear()}-${
+          new Date().getMonth() + 1
+        }-${new Date().getDate()} ${new Date().getHours()}:${new Date().getMinutes()}`,
+        audio: audio,
+      }).then(() => {
+        setMsgImg("");
+        setImageSendOpen(false);
+        setImageSendOpen(false);
+        setEmojiShow(false);
+        setOpenCamera(false);
       });
     }
   };
   // emoji functionality
   let handleEmoji = (e) => {
     setMessage(message + e.emoji);
+    setGroupmsg(groupmsg + e.emoji);
   };
   // last message showing in friendslist
   let lastMessage = () => {
@@ -373,7 +476,54 @@ const Message = () => {
       lastTxt: message,
     });
   };
+  // style badge
+  const StyledBadge = styled(Badge)(({ theme }) => ({
+    "& .MuiBadge-badge": {
+      backgroundColor: "#44b700",
+      color: "#44b700",
+      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+      "&::after": {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        borderRadius: "50%",
+        animation: "ripple 1.2s infinite ease-in-out",
+        border: "1px solid currentColor",
+        content: '""',
+      },
+    },
+    "@keyframes ripple": {
+      "0%": {
+        transform: "scale(.8)",
+        opacity: 1,
+      },
+      "100%": {
+        transform: "scale(2.4)",
+        opacity: 0,
+      },
+    },
+  }));
 
+  // group message functionality
+  let [groupmsg, setGroupmsg] = useState("");
+  let [groupImg, setGroupImg] = useState("");
+  let [groupAudio, setGroupAudio] = useState("");
+  let [groupMsgArr, setGroupMsgArr] = useState("");
+  useEffect(() => {
+    let db = getDatabase();
+    const groupmsgRef = ref(db, "groupmsg");
+    onValue(groupmsgRef, (snapshot) => {
+      let arr = [];
+
+      snapshot.forEach((items) => {
+        arr.push({ ...items.val(), id: items.key });
+      });
+      setGroupMsgArr(arr);
+      // setDlt(dltTxtArr);
+    });
+  }, [groupItem]);
   return (
     <>
       <Box
@@ -435,6 +585,13 @@ const Message = () => {
                       profession={item.grouptag}
                       buttonName="Group Info"
                       onClick={() => membersListshow(item.id)}
+                      doubleButton={true}
+                      secontBtnName="Text"
+                      secondButtonOnclick={() => {
+                        setGroupItem({ ...item, status: "group-message" });
+                        console.log(groupItem);
+                        friendItem.senderPhoto = "no-user";
+                      }}
                     />
                   </div>
                 ))}
@@ -574,14 +731,21 @@ const Message = () => {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Avatar
-                  sx={{ height: "60px", width: "60px" }}
-                  src={
-                    friendItem.senderUid === data.userData.userInfo.uid
-                      ? friendItem.recieverPhoto
-                      : friendItem.senderPhoto
-                  }
-                />
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
+                  <Avatar
+                    sx={{ height: "60px", width: "60px" }}
+                    src={
+                      friendItem.senderUid === data.userData.userInfo.uid
+                        ? friendItem.recieverPhoto
+                        : friendItem.senderPhoto
+                    }
+                  />
+                </StyledBadge>
+
                 <Box sx={{ padding: "0 0 0 20px" }}>
                   <h3>
                     {friendItem.senderUid === data.userData.userInfo.uid
@@ -1188,6 +1352,474 @@ const Message = () => {
                     onClick={() => {
                       handleSentMessage();
                       lastMessage();
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        ) : groupItem.grouptag !== "no-group-items" ? (
+          <Box
+            sx={{
+              width: { xs: "100%", sm: "100%", md: "66%" },
+              height: "100%",
+              marginBottom: { xs: "150px", sm: "150px", md: "0" },
+              background: "white",
+              borderRadius: "15px",
+              marginTop: { xs: "20px", sm: "20px", md: "0" },
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                height: "15%",
+
+                padding: "0 0 0 20px",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                borderRadius: "15px 15px 0 0",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
+                  <Avatar sx={{ height: "60px", width: "60px" }} />
+                </StyledBadge>
+
+                <Box sx={{ padding: "0 0 0 20px" }}>
+                  <h3>{groupItem.groupname}</h3>
+                  <h6 style={{ color: "#d1d1d1" }}>Online</h6>
+                </Box>
+              </Box>
+            </Box>
+            <ScrollToBottom
+              // sx={{
+              //   width: "100%",
+              //   height: "65%",
+              //   background: "#fff",
+              //   overflowY: "scroll",
+              //   padding: "10px",
+              // }}
+              className="chatArea"
+            >
+              {groupMsgArr.map((item) =>
+                item.recieveGroupid === groupItem.id ? (
+                  item.whosendid === data.userData.userInfo.uid ? (
+                    <Box
+                      onClick={() => setDlt(item.id)}
+                      sx={{
+                        width: "100%",
+                        padding: "6px",
+                        display: "flex",
+                        justifyContent: "end",
+                      }}
+                    >
+                      <Box>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {item.whosendname}
+                        </p>
+                        {item.groupImg ? (
+                          <Box
+                            onClick={() => setDlt(item.id)}
+                            sx={{
+                              width: "100%",
+                              padding: "6px",
+                              display: "flex",
+                              justifyContent: "end",
+                            }}
+                          >
+                            <Box>
+                              <p
+                                style={{
+                                  color: "#d1d1d1",
+                                  fontSize: "13px",
+                                  marginBottom: "5px",
+                                }}
+                              >
+                                {item.whosendname}
+                              </p>
+                              <Box
+                                id="demo-positioned-button"
+                                aria-controls={
+                                  menuopen ? "demo-positioned-menu" : undefined
+                                }
+                                aria-haspopup="true"
+                                aria-expanded={menuopen ? "true" : undefined}
+                                onClick={handleClick}
+                                sx={{
+                                  borderRadius: "13px",
+                                  background: "#5f34f5",
+                                  padding: "10px",
+                                  color: "#fff",
+                                }}
+                              >
+                                {!item.groupImg ? (
+                                  <p>Your message Removed</p>
+                                ) : (
+                                  <img
+                                    style={{ width: "250px", height: "auto" }}
+                                    src={item.groupImg}
+                                  />
+                                )}
+                              </Box>
+                              <Menu
+                                id="demo-positioned-menu"
+                                aria-labelledby="demo-positioned-button"
+                                anchorEl={anchorEl}
+                                open={menuopen}
+                                onClose={handleoff}
+                                anchorOrigin={{
+                                  vertical: "bottom",
+                                  horizontal: "left",
+                                }}
+                                transformOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                              >
+                                <MenuItem onClick={handleoff}>
+                                  <Share /> Forward
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={() => {
+                                    handleoff();
+                                    update(ref(db, "singlemsg/" + dlt), {
+                                      image: "",
+                                    });
+                                    navigate("/chattingup/message");
+                                  }}
+                                >
+                                  <Delete /> Delete
+                                </MenuItem>
+                              </Menu>
+                              <p
+                                style={{
+                                  color: "#d1d1d1",
+                                  fontSize: "13px",
+                                  marginTop: "5px",
+                                }}
+                              >
+                                {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                              </p>
+                            </Box>
+                          </Box>
+                        ) : item.audio ? (
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#d1d1d1",
+                              padding: "10px",
+                              color: "#222",
+                            }}
+                          >
+                            {item.audio === "" ? (
+                              <p>Your message Removed</p>
+                            ) : (
+                              <audio src={item.audio} controls></audio>
+                            )}
+                          </Box>
+                        ) : (
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#5f34f5",
+                              padding: "10px",
+                              color: "#fff",
+                            }}
+                          >
+                            {item.groupmessage}
+                          </Box>
+                        )}
+
+                        <Menu
+                          id="demo-positioned-menu"
+                          aria-labelledby="demo-positioned-button"
+                          anchorEl={anchorEl}
+                          open={menuopen}
+                          onClose={handleoff}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                        >
+                          <MenuItem onClick={handleoff}>
+                            <Share /> Forward
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleoff();
+                              update(ref(db, "singlemsg/" + dlt), {
+                                message: "Your message Removed",
+                              });
+                            }}
+                          >
+                            <Delete /> Delete
+                          </MenuItem>
+                        </Menu>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginTop: "5px",
+                          }}
+                        >
+                          {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                        </p>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box
+                      onClick={() => setDlt(item.id)}
+                      sx={{
+                        width: "100%",
+                        padding: "6px",
+                        display: "flex",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <Box>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {item.whosendname}
+                        </p>
+                        {item.groupImg ? (
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#d1d1d1",
+                              padding: "10px",
+                              color: "#fff",
+                            }}
+                          >
+                            {!item.groupImg ? (
+                              <p>Your message Removed</p>
+                            ) : (
+                              <img
+                                style={{ width: "250px", height: "auto" }}
+                                src={item.groupImg}
+                              />
+                            )}
+                          </Box>
+                        ) : item.audio ? (
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#d1d1d1",
+                              padding: "10px",
+                              color: "#222",
+                            }}
+                          >
+                            {item.audio === "" ? (
+                              <p>Your message Removed</p>
+                            ) : (
+                              <audio src={item.audio} controls></audio>
+                            )}
+                          </Box>
+                        ) : (
+                          <Box
+                            id="demo-positioned-button"
+                            aria-controls={
+                              menuopen ? "demo-positioned-menu" : undefined
+                            }
+                            aria-haspopup="true"
+                            aria-expanded={menuopen ? "true" : undefined}
+                            onClick={handleClick}
+                            sx={{
+                              borderRadius: "13px",
+                              background: "#d1d1d1",
+                              padding: "10px",
+                              color: "#222",
+                            }}
+                          >
+                            {item.groupmessage}
+                          </Box>
+                        )}
+
+                        <Menu
+                          id="demo-positioned-menu"
+                          aria-labelledby="demo-positioned-button"
+                          anchorEl={anchorEl}
+                          open={menuopen}
+                          onClose={handleoff}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                        >
+                          <MenuItem onClick={handleoff}>
+                            <Share /> Forward
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleoff();
+                              update(ref(db, "singlemsg/" + dlt), {
+                                message: "Your message Removed",
+                              });
+                            }}
+                          >
+                            <Delete /> Delete
+                          </MenuItem>
+                        </Menu>
+                        <p
+                          style={{
+                            color: "#d1d1d1",
+                            fontSize: "13px",
+                            marginTop: "5px",
+                          }}
+                        >
+                          {moment(item.date, "YYYYMMDD hh:mm").fromNow()}
+                        </p>
+                      </Box>
+                    </Box>
+                  )
+                ) : (
+                  ""
+                )
+              )}
+            </ScrollToBottom>
+            <Box
+              sx={{
+                width: "100%",
+                height: "20%",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+                background: "#fff",
+                display: "flex",
+                borderRadius: "0 0 15px 15px",
+              }}
+            >
+              <Box
+                sx={{
+                  padding: "0 0 0 20px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{ display: "flex ", gap: "10px", alignItems: "center" }}
+                >
+                  <InputBox
+                    onKeyUp={enterMessage}
+                    label="Type a Message"
+                    onChange={(e) => setGroupmsg(e.target.value)}
+                    value={groupmsg}
+                  />
+                  {openCamera && (
+                    <Box
+                      sx={{
+                        position: "fixed",
+                        width: "100%",
+                        height: "100vh",
+                        top: "0",
+                        left: "0",
+                        zIndex: "999999",
+                      }}
+                    >
+                      <ExitToApp
+                        sx={{
+                          position: "absolute",
+                          zIndex: "9999999",
+                          top: "50px",
+                          left: "50px",
+                        }}
+                        onClick={() => setOpenCamera(false)}
+                      />{" "}
+                      <Camera
+                        idealResolution={{ width: "100%" }}
+                        isFullscreen={true}
+                        onTakePhoto={(dataUri) => {
+                          handleTakePhoto(dataUri);
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  <CameraAlt
+                    onClick={handleimageSendOpen}
+                    sx={{
+                      color: "#5f34f5",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  />
+                  <Box sx={{ position: "relative" }}>
+                    {emojiShow && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          bottom: "30px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                        }}
+                      >
+                        <EmojiPicker onEmojiClick={(e) => handleEmoji(e)} />
+                      </Box>
+                    )}
+                    <EmojiEmotions
+                      sx={{ color: "#5f34f5", marginTop: "6px" }}
+                      onClick={() => setEmojiShow((prev) => !prev)}
+                    />
+                  </Box>
+
+                  <AudioRecorder
+                    onRecordingComplete={(blob) => addAudioElement(blob)}
+                    recorderControls={recorderControls}
+                  />
+                  <ListButton
+                    title={<Send />}
+                    onClick={() => {
+                      handleSentMessage();
                     }}
                   />
                 </Box>

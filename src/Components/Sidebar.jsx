@@ -60,6 +60,7 @@ const Sidebar = () => {
     const reader = new FileReader();
     reader.onload = () => {
       setImage(reader.result);
+      console.log(image);
     };
     reader.readAsDataURL(files[0]);
   };
