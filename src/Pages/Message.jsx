@@ -418,7 +418,6 @@ const Message = () => {
     const audio = document.createElement("audio");
     audio.src = url;
     audio.controls = true;
-    document.body.appendChild(audio);
 
     let storageRef = storageref(storage, `textAudio/${Math.random()}`);
     uploadBytes(storageRef, blob).then((snapshot) => {
@@ -524,6 +523,20 @@ const Message = () => {
       // setDlt(dltTxtArr);
     });
   }, [groupItem]);
+
+  // login logout message reaD
+  let [loginArr, setLoginArr] = useState([]);
+  useEffect(() => {
+    let db = getDatabase();
+    const friendListRef = ref(db, "whologin");
+    onValue(friendListRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        arr.push(items.val().uid);
+      });
+      setLoginArr(arr);
+    });
+  }, []);
   return (
     <>
       <Box
@@ -641,6 +654,9 @@ const Message = () => {
                         buttonName="Text"
                         name={item.recieverName}
                         imgsrc={item.recieverPhoto}
+                        online={
+                          loginArr.includes(item.recieverID) ? true : false
+                        }
                         profession={item.lastTxt}
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
@@ -654,6 +670,9 @@ const Message = () => {
                         buttonName="Text"
                         name={item.senderName}
                         imgsrc={item.senderPhoto}
+                        online={
+                          loginArr.includes(item.senderUid) ? true : false
+                        }
                         profession={item.lastTxt}
                         onClick={() =>
                           handleText({ ...item, status: "singlemsg" })
@@ -731,11 +750,23 @@ const Message = () => {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <StyledBadge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  variant="dot"
-                >
+                {loginArr.includes(friendItem.recieverID) &&
+                loginArr.includes(friendItem.senderUid) ? (
+                  <StyledBadge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    variant="dot"
+                  >
+                    <Avatar
+                      sx={{ height: "60px", width: "60px" }}
+                      src={
+                        friendItem.senderUid === data.userData.userInfo.uid
+                          ? friendItem.recieverPhoto
+                          : friendItem.senderPhoto
+                      }
+                    />
+                  </StyledBadge>
+                ) : (
                   <Avatar
                     sx={{ height: "60px", width: "60px" }}
                     src={
@@ -744,7 +775,7 @@ const Message = () => {
                         : friendItem.senderPhoto
                     }
                   />
-                </StyledBadge>
+                )}
 
                 <Box sx={{ padding: "0 0 0 20px" }}>
                   <h3>
@@ -752,7 +783,13 @@ const Message = () => {
                       ? friendItem.recieverName
                       : friendItem.senderName}
                   </h3>
-                  <h6 style={{ color: "#d1d1d1" }}>Online</h6>
+
+                  {loginArr.includes(friendItem.recieverID) &&
+                  loginArr.includes(friendItem.senderUid) ? (
+                    <h6 style={{ color: "#d1d1d1" }}>Online</h6>
+                  ) : (
+                    <h6 style={{ color: "#d1d1d1" }}>Offline</h6>
+                  )}
                 </Box>
               </Box>
             </Box>
@@ -1197,7 +1234,7 @@ const Message = () => {
                             marginBottom: "5px",
                           }}
                         >
-                          {item.whorecievename}
+                          {item.whosendname}
                         </p>
                         <Box
                           id="demo-positioned-button"
@@ -1525,7 +1562,7 @@ const Message = () => {
                             onClick={handleClick}
                             sx={{
                               borderRadius: "13px",
-                              background: "#d1d1d1",
+                              background: "#5f34f5",
                               padding: "10px",
                               color: "#222",
                             }}

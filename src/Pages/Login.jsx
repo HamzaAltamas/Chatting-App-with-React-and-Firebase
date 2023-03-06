@@ -96,6 +96,9 @@ const Login = () => {
         }, 3000);
         disp(activeUser(userCredential.user));
         localStorage.setItem("userInfo", JSON.stringify(userCredential.user));
+        set(ref(db, "whologin/" + userCredential.user.uid), {
+          uid: userCredential.user.uid,
+        });
       });
     });
   };
@@ -205,6 +208,9 @@ const Login = () => {
               "userInfo",
               JSON.stringify(userCredential.user)
             );
+            set(ref(db, "whologin/" + userCredential.user.uid), {
+              uid: userCredential.user.uid,
+            });
             disp(activeUser(userCredential.user));
             setLoader(true);
             toast.success("Login Successfull!", {

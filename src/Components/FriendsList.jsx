@@ -16,6 +16,7 @@ import ListItems from "./ListItems";
 const FriendsList = ({ title, button, buttonName, date }) => {
   let userData = useSelector((state) => state);
   let [friends, setFriends] = useState([]);
+  let [loginArr, setLoginArr] = useState([]);
   let db = getDatabase();
   useEffect(() => {
     let db = getDatabase();
@@ -31,6 +32,18 @@ const FriendsList = ({ title, button, buttonName, date }) => {
         }
       });
       setFriends(arr);
+    });
+  }, []);
+
+  useEffect(() => {
+    let db = getDatabase();
+    const friendListRef = ref(db, "whologin");
+    onValue(friendListRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        arr.push(items.val().uid);
+      });
+      setLoginArr(arr);
     });
   }, []);
 
@@ -80,6 +93,7 @@ const FriendsList = ({ title, button, buttonName, date }) => {
 
   return (
     <>
+      {console.log(loginArr)}
       <ToastContainer
         position="bottom-center"
         autoClose={5000}
@@ -131,6 +145,7 @@ const FriendsList = ({ title, button, buttonName, date }) => {
                     profession={item.lastTxt}
                     // date={item.date}
                     button={true}
+                    online={loginArr.includes(item.recieverID) ? true : false}
                     buttonName="Block"
                     name={item.recieverName}
                     imgsrc={item.recieverPhoto}
@@ -143,6 +158,7 @@ const FriendsList = ({ title, button, buttonName, date }) => {
                     profession={item.lastTxt}
                     button={true}
                     buttonName="Block"
+                    online={loginArr.includes(item.senderUid) ? true : false}
                     name={item.senderName}
                     imgsrc={item.senderPhoto}
                     onClick={() => handleBlock(item)}

@@ -22,7 +22,7 @@ import {
   uploadString,
   getDownloadURL,
 } from "firebase/storage";
-import { getDatabase, ref, update } from "@firebase/database";
+import { getDatabase, onValue, ref, remove, update } from "@firebase/database";
 import { PhotoCamera } from "@mui/icons-material";
 const style = {
   position: "absolute",
@@ -127,11 +127,30 @@ const Sidebar = () => {
   // });
   // // track user login or logout
 
+  // login logout message reaD
+  let [loginArr, setLoginArr] = useState([]);
+  useEffect(() => {
+    let db = getDatabase();
+    const friendListRef = ref(db, "whologin");
+    onValue(friendListRef, (snapshot) => {
+      let arr = [];
+      snapshot.forEach((items) => {
+        arr.push(items.val().uid);
+      });
+      setLoginArr(arr);
+    });
+  }, []);
+
   let logout = () => {
     signOut(auth).then(() => {
       disp(activeUser(null));
       localStorage.clear("userInfo");
       navigate("/");
+    });
+
+    loginArr.map((item) => {
+      item === userData.userData.userInfo.uid &&
+        remove(ref(db, "whologin/" + item));
     });
   };
   return (
