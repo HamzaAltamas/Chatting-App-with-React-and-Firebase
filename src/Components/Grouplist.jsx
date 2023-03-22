@@ -12,7 +12,7 @@ import {
 
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import Heading from "./Heading";
 import InputBox from "./InputBox";
 import CommonButton from "./CommonButton";
@@ -20,6 +20,15 @@ import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
+import { PhotoCamera } from "@mui/icons-material";
+import {
+  getDownloadURL,
+  getStorage,
+  ref as storegRef,
+  uploadBytes,
+  uploadString,
+} from "firebase/storage";
+import { Cropper } from "react-cropper";
 
 const style = {
   position: "absolute",
@@ -106,6 +115,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
         grouptag: createGroupInfo.grouptag,
         adminID: data.userData.userInfo.uid,
         adminName: data.userData.userInfo.displayName,
+        groupImg: dpurl,
       }).then(() => {
         setOpen(false);
         setErrorText("");
@@ -155,6 +165,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
       whoJoined: data.userData.userInfo.uid,
       whoJoinedName: data.userData.userInfo.displayName,
       whoJoinedPhoto: data.userData.userInfo.photoURL,
+      groupImg: dpurl,
     }).then(() => {
       toast.success("Join request sent", {
         position: "bottom-center",
@@ -178,6 +189,49 @@ const GroupList = ({ title, button, buttonName, date }) => {
       id === item.groupID && remove(ref(db, "grouprequest/" + item.id));
     });
   };
+
+  // groupImage functionality
+  let [grpImg, setGrpImg] = useState();
+  const [cropper, setCropper] = useState();
+  const [cropData, setCropData] = useState("#");
+  let [dpurl, setDpurl] = useState("");
+  const cropperChange = (e) => {
+    e.preventDefault();
+    let files;
+    console.log(e.target.files);
+    if (e.dataTransfer) {
+      files = e.dataTransfer.files;
+    } else if (e.target) {
+      files = e.target.files;
+    }
+    console.log(files);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setGrpImg(reader.result);
+      console.log(grpImg);
+    };
+    reader.readAsDataURL(files[0]);
+  };
+
+  const getCropData = () => {
+    if (typeof cropper !== "undefined") {
+      setCropData(cropper.getCroppedCanvas().toDataURL());
+    }
+    const storage = getStorage();
+    const dpRef = storegRef(storage, `groupImage/${Math.random()}`); //base64 image upload on upload button
+    // Data URL string
+    const cropedDp = cropper.getCroppedCanvas().toDataURL();
+    uploadString(dpRef, cropedDp, "data_url").then((snapshot) => {
+      console.log("Uploaded a data_url string!");
+
+      getDownloadURL(dpRef).then((downloadURL) => {
+        setDpurl(downloadURL);
+        console.log(dpRef, downloadURL);
+        setGrpImg();
+      });
+    });
+  };
+
   return (
     <>
       <Box
@@ -205,6 +259,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
               reqArr.includes(item.id) ? (
                 <ListItems
                   key={item.id}
+                  imgsrc={item.groupImg}
                   name={item.groupname}
                   button={button}
                   buttonName="cancel join request"
@@ -214,6 +269,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
               ) : memberArr.includes(item.id) ? (
                 <ListItems
                   key={item.id}
+                  imgsrc={item.groupImg}
                   name={item.groupname}
                   button={button}
                   buttonName="Joined"
@@ -223,6 +279,7 @@ const GroupList = ({ title, button, buttonName, date }) => {
                 <ListItems
                   key={item.id}
                   name={item.groupname}
+                  imgsrc={item.groupImg}
                   button={button}
                   buttonName="Join"
                   profession={item.grouptag}
@@ -275,12 +332,80 @@ const GroupList = ({ title, button, buttonName, date }) => {
             }}
             // value={}
           />
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <CommonButton
-              title="Create Group"
-              buttonName={SubmitButtonStyle}
-              onClick={handleCreateGroup}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "10px",
+            }}
+          >
+            {grpImg && (
+              <Box
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                }}
+                className="img-preview"
+              ></Box>
+            )}
+          </Box>
+          {grpImg && (
+            <Cropper
+              style={{ height: 400, width: "100%", marginTop: "20px" }}
+              zoomTo={0.5}
+              initialAspectRatio={1}
+              preview=".img-preview"
+              src={grpImg}
+              viewMode={1}
+              minCropBoxHeight={10}
+              minCropBoxWidth={10}
+              background={true}
+              responsive={true}
+              autoCropArea={1}
+              checkOrientation={false} // https://github.com/fengyuanchen/cropperjs/issues/671
+              onInitialized={(instance) => {
+                setCropper(instance);
+              }}
+              guides={true}
             />
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "10px",
+            }}
+          >
+            <IconButton
+              color="primary"
+              aria-label="upload picture"
+              component="label"
+            >
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={cropperChange}
+              />
+              <PhotoCamera />
+            </IconButton>
+            {grpImg && <Button onClick={getCropData}>Select</Button>}
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            {dpurl && (
+              <CommonButton
+                title="Create Group"
+                buttonName={SubmitButtonStyle}
+                onClick={handleCreateGroup}
+              />
+            )}
           </Box>
         </Box>
       </Modal>
